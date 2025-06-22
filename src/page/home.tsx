@@ -9,38 +9,55 @@ import { useNavigate } from "react-router-dom";
 import VideoBarChart from "../components/homePage/VideoBarChart";
 import VideoLineComparison from "../components/homePage/VideoLineComparison";
 import DashboardBottomSection from "../components/homePage/DashboardBottomSection";
+import { useEffect, useState } from "react";
+import api from "../lib/axios";
 
 export default function Home() {
   const navigate = useNavigate();
-
   const adminInfo = JSON.parse(sessionStorage.getItem("adminInfo") || "{}");
 
-  const stats = [
-    {
-      label: "Người dùng mới hôm nay",
-      value: 12,
-      icon: <FiUsers size={20} />,
-      link: "/user-new",
-      bg: "bg-blue-100",
-      text: "text-blue-600",
-    },
-    {
-      label: "Video hôm nay",
-      value: 8,
-      icon: <FiVideo size={20} />,
-      link: "/videos-new",
-      bg: "bg-purple-100",
-      text: "text-purple-600",
-    },
-    {
-      label: "Báo cáo hôm nay",
-      value: 3,
-      icon: <FiAlertCircle size={20} />,
-      link: "/reports-new",
-      bg: "bg-red-100",
-      text: "text-red-600",
-    },
-  ];
+  const [stats, setStats] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchTodayStats = async () => {
+      try {
+        const res = await api.get("/users/admin/today-stats", {
+          headers: { token: true },
+        });
+        const data = res.data;
+        setStats([
+          {
+            label: "Người dùng mới hôm nay",
+            value: data.newUsers,
+            icon: <FiUsers size={20} />,
+            link: "/user-new",
+            bg: "bg-blue-100",
+            text: "text-blue-600",
+          },
+          {
+            label: "Video hôm nay",
+            value: data.newPosts,
+            icon: <FiVideo size={20} />,
+            link: "/videos-new",
+            bg: "bg-purple-100",
+            text: "text-purple-600",
+          },
+          {
+            label: "Báo cáo hôm nay",
+            value: data.newReports,
+            icon: <FiAlertCircle size={20} />,
+            link: "/reports-new",
+            bg: "bg-red-100",
+            text: "text-red-600",
+          },
+        ]);
+      } catch (err) {
+        console.error("Lỗi khi fetch today stats:", err);
+      }
+    };
+
+    fetchTodayStats();
+  }, []);
 
   return (
     <div className="p-4 space-y-4">
