@@ -13,6 +13,7 @@ import Video from "./page/video";
 import Sidebar from "./components/SideBar";
 import Document from "./page/documentation";
 import LoginPage from "./page/login";
+import Report from "./page/report";
 
 function ProtectedLayout() {
   const location = useLocation();
@@ -57,6 +58,7 @@ function ProtectedLayout() {
           <Route path="/" element={<Home />} />
           <Route path="/users" element={<Users />} />
           <Route path="/video" element={<Video />} />
+          <Route path="/reports" element={<Report />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/documents" element={<Document />} />
         </Routes>
