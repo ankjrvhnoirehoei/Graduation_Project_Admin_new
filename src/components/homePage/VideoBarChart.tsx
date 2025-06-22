@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { BarChart, Bar, CartesianGrid, XAxis, YAxis } from "recharts";
 import { TrendingUp } from "lucide-react";
 import {
@@ -15,16 +16,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "../../components/ui/chart";
-
-const data = [
-  { day: "T2", videos: 5 },
-  { day: "T3", videos: 30 },
-  { day: "T4", videos: 7 },
-  { day: "T5", videos: 41 },
-  { day: "T6", videos: 6 },
-  { day: "T7", videos: 2 },
-  { day: "CN", videos: 47 },
-];
+import api from "../../lib/axios";
 
 const chartConfig = {
   videos: {
@@ -34,6 +26,27 @@ const chartConfig = {
 };
 
 export default function VideoBarChart() {
+  const [data, setData] = useState<{ day: string; videos: number }[]>([]);
+
+  useEffect(() => {
+    const fetchWeeklyStats = async () => {
+      try {
+        const res = await api.get("/posts/admin/weekly", {
+          headers: { token: true },
+        });
+        const transformed = res.data.map((item: any) => ({
+          day: item.day,
+          videos: item.posts,
+        }));
+        setData(transformed);
+      } catch (err) {
+        console.error("Lỗi khi fetch thống kê tuần:", err);
+      }
+    };
+
+    fetchWeeklyStats();
+  }, []);
+
   return (
     <Card>
       <CardHeader>
@@ -55,7 +68,7 @@ export default function VideoBarChart() {
               tickLine={false}
               axisLine={false}
               tickMargin={8}
-              domain={[0, 60]}
+              domain={[0, "dataMax + 2"]} // tự động scale
             />
             <ChartTooltip
               cursor={false}

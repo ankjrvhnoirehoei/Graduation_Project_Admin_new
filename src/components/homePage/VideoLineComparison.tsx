@@ -16,19 +16,9 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "../../components/ui/chart";
+import { useEffect, useState } from "react";
+import api from "../../lib/axios";
 
-// Dữ liệu 2 tuần
-const chartData = [
-  { day: "T2", thisWeek: 51, lastWeek: 32 },
-  { day: "T3", thisWeek: 60, lastWeek: 42 },
-  { day: "T4", thisWeek: 41, lastWeek: 51 },
-  { day: "T5", thisWeek: 86, lastWeek: 61 },
-  { day: "T6", thisWeek: 13, lastWeek: 44 },
-  { day: "T7", thisWeek: 73, lastWeek: 59 },
-  { day: "CN", thisWeek: 34, lastWeek: 36 },
-];
-
-// Cấu hình biểu đồ
 const chartConfig = {
   thisWeek: {
     label: "Tuần này",
@@ -41,6 +31,40 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 export default function VideoLineComparison() {
+  const [chartData, setChartData] = useState<
+    { day: string; thisWeek: number; lastWeek: number }[]
+  >([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await api.get("/posts/admin/last-two-weeks", {
+          headers: { token: true },
+        });
+
+        const rawData = res.data;
+
+        const transformed = rawData.map((item: any) => ({
+          day: item.day,
+          thisWeek: item.previousWeek,
+          lastWeek: item.beforePrevious,
+        }));
+
+        const order = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
+        transformed.sort(
+          (a: { day: string }, b: { day: string }) =>
+            order.indexOf(a.day) - order.indexOf(b.day)
+        );
+
+        setChartData(transformed);
+      } catch (error) {
+        console.error("Lỗi khi fetch dữ liệu 2 tuần:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   return (
     <Card>
       <CardHeader>
@@ -62,7 +86,7 @@ export default function VideoLineComparison() {
               tickLine={false}
               axisLine={false}
               tickMargin={10}
-              domain={[0, 100]}
+              domain={[0, "dataMax + 2"]}
             />
             <ChartTooltip content={<ChartTooltipContent />} />
             <Line

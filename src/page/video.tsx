@@ -5,6 +5,8 @@ import VideoRadarChart from "../components/videoPage/VideoRadarChart";
 import { VideoPostRadialSummary } from "../components/videoPage/VideoPostRadialSummary";
 
 export default function Video() {
+  const adminInfo = JSON.parse(sessionStorage.getItem("adminInfo") || "{}");
+
   return (
     <div className="p-4 space-y-4">
       <div className="flex justify-between items-center">
@@ -24,11 +26,13 @@ export default function Video() {
           />
           <div className="flex items-center space-x-2">
             <img
-              src="https://i.pinimg.com/736x/6f/a5/88/6fa588f89c774e53eb9dc58eae66869f.jpg"
-              alt="admin"
-              className="w-7 h-7 rounded-full"
+              src={adminInfo.profilePic || "https://via.placeholder.com/32"}
+              alt="admin avatar"
+              className="w-7 h-7 rounded-full object-cover"
             />
-            <span className="text-sm font-medium text-gray-700">Admin</span>
+            <span className="text-sm font-medium text-gray-700">
+              {adminInfo.username || "Admin"}
+            </span>
           </div>
         </div>
       </div>
