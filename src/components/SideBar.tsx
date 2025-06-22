@@ -1,4 +1,10 @@
-import { FiBookOpen, FiHome, FiSettings, FiUser } from "react-icons/fi";
+import {
+  FiBookOpen,
+  FiFileText,
+  FiHome,
+  FiSettings,
+  FiUser,
+} from "react-icons/fi";
 import { Link, useLocation } from "react-router-dom";
 import clsx from "clsx";
 import { Clapperboard } from "lucide-react";
@@ -7,6 +13,7 @@ const navItems = [
   { name: "Dashboard", path: "/", icon: <FiHome size={18} /> },
   { name: "User", path: "/users", icon: <FiUser size={18} /> },
   { name: "Video", path: "/video", icon: <Clapperboard size={18} /> },
+  { name: "Report", path: "/reports", icon: <FiFileText size={18} /> },
   { name: "Settings", path: "/settings", icon: <FiSettings size={18} /> },
 ];
 

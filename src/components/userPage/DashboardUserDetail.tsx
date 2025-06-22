@@ -13,15 +13,7 @@ import { TrendingUp } from "lucide-react";
 
 export default function DashboardUserDetail() {
   const [search, setSearch] = useState("");
-
-  const user = {
-    avatar:
-      "https://i.pinimg.com/736x/6f/a5/88/6fa588f89c774e53eb9dc58eae66869f.jpg",
-    handleName: "justina",
-    fullName: "Justina Xie",
-    bio: "Content creator | Travel lover 🌍",
-    isVip: true,
-  };
+  const adminInfo = JSON.parse(sessionStorage.getItem("adminInfo") || "{}");
 
   const chartData = [
     { week: "Tuần 1", post: 52, story: 30 },
@@ -49,16 +41,20 @@ export default function DashboardUserDetail() {
         <div className="w-full md:w-[30%]">
           <div className="flex flex-col items-center text-center space-y-2">
             <img
-              src={user.avatar}
-              alt="user-avatar"
+              src={adminInfo.profilePic || "https://via.placeholder.com/80"}
+              alt="admin-avatar"
               className="w-20 h-20 rounded-full object-cover"
             />
             <p className="text-lg font-semibold text-gray-800">
-              @{user.handleName}
+              @{adminInfo.handleName || "admin"}
             </p>
-            <p className="text-sm text-gray-500">{user.fullName}</p>
-            <p className="text-xs text-gray-600 italic">{user.bio}</p>
-            {user.isVip ? (
+            <p className="text-sm text-gray-500">
+              {adminInfo.username || "Admin"}
+            </p>
+            <p className="text-xs text-gray-600 italic">
+              {adminInfo.address || "Địa chỉ không rõ"}
+            </p>
+            {adminInfo.isVip ? (
               <Badge
                 variant="default"
                 className="bg-yellow-400 text-white mt-2"
