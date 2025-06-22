@@ -13,12 +13,14 @@ import DashboardBottomSection from "../components/homePage/DashboardBottomSectio
 export default function Home() {
   const navigate = useNavigate();
 
+  const adminInfo = JSON.parse(sessionStorage.getItem("adminInfo") || "{}");
+
   const stats = [
     {
       label: "Người dùng mới hôm nay",
       value: 12,
       icon: <FiUsers size={20} />,
-      link: "/user",
+      link: "/user-new",
       bg: "bg-blue-100",
       text: "text-blue-600",
     },
@@ -26,7 +28,7 @@ export default function Home() {
       label: "Video hôm nay",
       value: 8,
       icon: <FiVideo size={20} />,
-      link: "/videos",
+      link: "/videos-new",
       bg: "bg-purple-100",
       text: "text-purple-600",
     },
@@ -34,7 +36,7 @@ export default function Home() {
       label: "Báo cáo hôm nay",
       value: 3,
       icon: <FiAlertCircle size={20} />,
-      link: "/reports",
+      link: "/reports-new",
       bg: "bg-red-100",
       text: "text-red-600",
     },
@@ -60,11 +62,13 @@ export default function Home() {
           />
           <div className="flex items-center space-x-2">
             <img
-              src="https://i.pinimg.com/736x/6f/a5/88/6fa588f89c774e53eb9dc58eae66869f.jpg"
-              alt="admin"
-              className="w-7 h-7 rounded-full"
+              src={adminInfo.profilePic || "https://via.placeholder.com/32"}
+              alt="admin avatar"
+              className="w-7 h-7 rounded-full object-cover"
             />
-            <span className="text-sm font-medium text-gray-700">Admin</span>
+            <span className="text-sm font-medium text-gray-700">
+              {adminInfo.username || "Admin"}
+            </span>
           </div>
         </div>
       </div>
