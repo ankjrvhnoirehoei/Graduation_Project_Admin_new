@@ -1,7 +1,8 @@
 "use client";
 
-import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
-import { TrendingUp } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import { TrendingUp, TrendingDown } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -11,45 +12,68 @@ import {
   CardTitle,
 } from "../../components/ui/card";
 import {
-  ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
+  ChartConfig,
 } from "../../components/ui/chart";
-
-const chartData = [
-  { month: "Jan", reels: 120, shorts: 80 },
-  { month: "Feb", reels: 95, shorts: 110 },
-  { month: "Mar", reels: 135, shorts: 130 },
-  { month: "Apr", reels: 105, shorts: 98 },
-  { month: "May", reels: 145, shorts: 125 },
-  { month: "Jun", reels: 170, shorts: 140 },
-  { month: "Jul", reels: 130, shorts: 110 },
-  { month: "Aug", reels: 160, shorts: 150 },
-  { month: "Sep", reels: 120, shorts: 95 },
-  { month: "Oct", reels: 140, shorts: 130 },
-  { month: "Nov", reels: 175, shorts: 160 },
-  { month: "Dec", reels: 190, shorts: 145 },
-];
+import api from "../../lib/axios";
 
 const chartConfig = {
   reels: {
-    label: "Reels",
+    label: "Posts",
     color: "var(--chart-1)",
   },
   shorts: {
-    label: "Shorts",
+    label: "Stories",
     color: "var(--chart-2)",
   },
 } satisfies ChartConfig;
 
 export default function VideoAreaChart() {
+  const [chartData, setChartData] = useState<
+    { month: string; reels: number; shorts: number }[]
+  >([]);
+  const [percentChange, setPercentChange] = useState<number | null>(null);
+  const [trend, setTrend] = useState<"increase" | "decrease" | null>(null);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const res = await api.get("/posts/admin/yearly-stats", {
+          headers: { token: true },
+        });
+
+        const stats = res.data;
+        const formattedData = stats.currentYearStats.map(
+          (item: { month: string; reels: number; stories: number }) => ({
+            month: item.month,
+            reels: item.reels,
+            shorts: item.stories,
+          })
+        );
+
+        setChartData(formattedData);
+
+        const compare = stats.comparison?.[0];
+        if (compare) {
+          setPercentChange(compare.percentageChange);
+          setTrend(compare.trend);
+        }
+      } catch (error) {
+        console.error("Lỗi fetch yearly stats:", error);
+      }
+    };
+
+    fetchStats();
+  }, []);
+
   return (
     <Card className="overflow-hidden">
       <CardHeader className="pb-2">
         <CardTitle className="text-base">Thống kê video theo tháng</CardTitle>
         <CardDescription className="text-xs">
-          Tổng số Reels & Shorts trong 12 tháng qua
+          Tổng số Posts & Stories trong 12 tháng qua
         </CardDescription>
       </CardHeader>
 
@@ -63,47 +87,21 @@ export default function VideoAreaChart() {
               axisLine={false}
               tickMargin={8}
             />
+            <YAxis tickLine={false} axisLine={false} />
             <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
-            <defs>
-              <linearGradient id="fillReels" x1="0" y1="0" x2="0" y2="1">
-                <stop
-                  offset="5%"
-                  stopColor="var(--color-reels)"
-                  stopOpacity={0.8}
-                />
-                <stop
-                  offset="95%"
-                  stopColor="var(--color-reels)"
-                  stopOpacity={0.1}
-                />
-              </linearGradient>
-              <linearGradient id="fillShorts" x1="0" y1="0" x2="0" y2="1">
-                <stop
-                  offset="5%"
-                  stopColor="var(--color-shorts)"
-                  stopOpacity={0.8}
-                />
-                <stop
-                  offset="95%"
-                  stopColor="var(--color-shorts)"
-                  stopOpacity={0.1}
-                />
-              </linearGradient>
-            </defs>
+            <defs></defs>
             <Area
               dataKey="shorts"
-              type="natural"
+              type="monotone"
               fill="url(#fillShorts)"
               stroke="var(--color-shorts)"
-              stackId="a"
               fillOpacity={0.4}
             />
             <Area
               dataKey="reels"
-              type="natural"
+              type="monotone"
               fill="url(#fillReels)"
               stroke="var(--color-reels)"
-              stackId="a"
               fillOpacity={0.4}
             />
           </AreaChart>
@@ -113,12 +111,23 @@ export default function VideoAreaChart() {
       <CardFooter className="pt-2">
         <div className="flex w-full items-start gap-2 text-xs">
           <div className="grid gap-1">
-            <div className="flex items-center gap-1 font-medium text-green-600">
-              Tăng 18.7% so với năm ngoái
-              <TrendingUp className="h-3 w-3" />
-            </div>
+            {percentChange !== null && trend && (
+              <div
+                className={`flex items-center gap-1 font-medium ${
+                  trend === "increase" ? "text-green-600" : "text-red-600"
+                }`}
+              >
+                {trend === "increase" ? (
+                  <TrendingUp className="h-3 w-3" />
+                ) : (
+                  <TrendingDown className="h-3 w-3" />
+                )}
+                {trend === "increase" ? "Tăng" : "Giảm"} {percentChange}% so với
+                năm ngoái
+              </div>
+            )}
             <div className="text-muted-foreground">
-              Dữ liệu từ Jan → Dec 2024
+              Dữ liệu từ Jan → Dec {new Date().getFullYear()}
             </div>
           </div>
         </div>

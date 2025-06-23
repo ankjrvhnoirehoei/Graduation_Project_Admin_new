@@ -1,6 +1,7 @@
 "use client";
 
-import { TrendingUp } from "lucide-react";
+import { useEffect, useState } from "react";
+import { TrendingUp, TrendingDown } from "lucide-react";
 import { Label, PolarRadiusAxis, RadialBar, RadialBarChart } from "recharts";
 import {
   Card,
@@ -16,22 +17,12 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "../../components/ui/chart";
-
-// Sample data
-const chartData = [
-  {
-    status: "summary",
-    featured: 42,
-    reported: 12,
-    removed: 7,
-    approved: 25,
-  },
-];
+import api from "../../lib/axios";
 
 const chartConfig = {
-  featured: {
+  hot: {
     label: "Nổi bật",
-    color: "#a78bfa", // Màu thực tế
+    color: "#a78bfa",
   },
   reported: {
     label: "Bị báo cáo",
@@ -41,48 +32,83 @@ const chartConfig = {
     label: "Bị gỡ",
     color: "#fca5a5",
   },
-  approved: {
+  resolved: {
     label: "Đã duyệt",
     color: "#6ee7b7",
   },
 } satisfies ChartConfig;
 
 export function VideoPostRadialSummary() {
-  const total =
-    chartData[0].featured +
-    chartData[0].reported +
-    chartData[0].removed +
-    chartData[0].approved;
+  const [chartData, setChartData] = useState<any[]>([]);
+  const [total, setTotal] = useState(0);
+  const [percentChange, setPercentChange] = useState<number | null>(null);
+  const [trend, setTrend] = useState<"increase" | "decrease" | null>(null);
+  const [summaryItems, setSummaryItems] = useState<
+    { label: string; value: number; gradient: string }[]
+  >([]);
+  const [dateRange, setDateRange] = useState<string>("");
 
-  const summaryItems = [
-    {
-      label: "Nổi bật",
-      value: chartData[0].featured,
-      gradient: "linear-gradient(135deg, #c4b5fd, #a78bfa)",
-    },
-    {
-      label: "Bị báo cáo",
-      value: chartData[0].reported,
-      gradient: "linear-gradient(135deg, #fed7aa, #fdba74)",
-    },
-    {
-      label: "Bị gỡ",
-      value: chartData[0].removed,
-      gradient: "linear-gradient(135deg, #fecaca, #fca5a5)",
-    },
-    {
-      label: "Đã duyệt",
-      value: chartData[0].approved,
-      gradient: "linear-gradient(135deg, #bbf7d0, #6ee7b7)",
-    },
-  ];
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await api.get("/posts/admin/summary-posts", {
+          headers: { token: true },
+        });
+
+        const stats = res.data;
+        const current = stats.currentWindow;
+
+        const dataItem = {
+          status: "summary",
+          hot: current.hot,
+          reported: current.reported,
+          removed: current.removed,
+          resolved: current.resolved,
+        };
+
+        setChartData([dataItem]);
+        setTotal(current.total || 0);
+        setPercentChange(stats.percentageChange);
+        setTrend(stats.trend);
+        setDateRange(`${stats.start} → ${stats.end}`);
+
+        setSummaryItems([
+          {
+            label: "Nổi bật",
+            value: current.hot,
+            gradient: "linear-gradient(135deg, #c4b5fd, #a78bfa)",
+          },
+          {
+            label: "Bị báo cáo",
+            value: current.reported,
+            gradient: "linear-gradient(135deg, #fed7aa, #fdba74)",
+          },
+          {
+            label: "Bị gỡ",
+            value: current.removed,
+            gradient: "linear-gradient(135deg, #fecaca, #fca5a5)",
+          },
+          {
+            label: "Đã duyệt",
+            value: current.resolved,
+            gradient: "linear-gradient(135deg, #bbf7d0, #6ee7b7)",
+          },
+        ]);
+      } catch (err) {
+        console.error("Summary posts error:", err);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   return (
     <Card className="flex flex-col">
       <CardHeader className="items-center pb-0">
         <CardTitle>Tổng bài đăng</CardTitle>
-        <CardDescription>6 tháng gần nhất</CardDescription>
+        <CardDescription>{dateRange || "6 tháng gần nhất"}</CardDescription>
       </CardHeader>
+
       <CardContent className="flex flex-1 items-center justify-center pb-0">
         <ChartContainer
           config={chartConfig}
@@ -125,12 +151,11 @@ export function VideoPostRadialSummary() {
               />
             </PolarRadiusAxis>
 
-            {/* Radial bars with fixed colors */}
             <RadialBar
-              dataKey="featured"
+              dataKey="hot"
               stackId="a"
               cornerRadius={5}
-              fill={chartConfig.featured.color}
+              fill={chartConfig.hot.color}
             />
             <RadialBar
               dataKey="reported"
@@ -145,19 +170,31 @@ export function VideoPostRadialSummary() {
               fill={chartConfig.removed.color}
             />
             <RadialBar
-              dataKey="approved"
+              dataKey="resolved"
               stackId="a"
               cornerRadius={5}
-              fill={chartConfig.approved.color}
+              fill={chartConfig.resolved.color}
             />
           </RadialBarChart>
         </ChartContainer>
       </CardContent>
 
       <CardFooter className="flex flex-col gap-2 text-sm">
-        <div className="flex items-center gap-2 leading-none font-semibold text-gray-900">
-          Tăng 8.6% so với trước <TrendingUp className="h-4 w-4" />
-        </div>
+        {percentChange !== null && trend && (
+          <div
+            className={`flex items-center gap-2 leading-none font-semibold ${
+              trend === "increase" ? "text-green-600" : "text-red-600"
+            }`}
+          >
+            {trend === "increase" ? (
+              <TrendingUp className="h-4 w-4" />
+            ) : (
+              <TrendingDown className="h-4 w-4" />
+            )}
+            {trend === "increase" ? "Tăng" : "Giảm"} {percentChange}% so với
+            trước
+          </div>
+        )}
 
         <div className="grid grid-cols-2 gap-2 mt-2 w-full">
           {summaryItems.map((item, idx) => (

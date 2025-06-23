@@ -12,7 +12,7 @@ import { Clapperboard } from "lucide-react";
 const navItems = [
   { name: "Dashboard", path: "/", icon: <FiHome size={18} /> },
   { name: "User", path: "/users", icon: <FiUser size={18} /> },
-  { name: "Video", path: "/video", icon: <Clapperboard size={18} /> },
+  { name: "Post", path: "/video", icon: <Clapperboard size={18} /> },
   { name: "Report", path: "/reports", icon: <FiFileText size={18} /> },
   { name: "Settings", path: "/settings", icon: <FiSettings size={18} /> },
 ];
