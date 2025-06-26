@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import api from "../../lib/axios";
 import VideoPreview from "../VideoPreview";
+import PostPreviewModal from "../PostPreviewModal";
 
 interface TopVideo {
   id: string;
@@ -23,6 +24,7 @@ interface TopUser {
 export default function DashboardBottomSection() {
   const [topVideos, setTopVideos] = useState<TopVideo[]>([]);
   const [topUsers, setTopUsers] = useState<TopUser[]>([]);
+  const [selectedPost, setSelectedPost] = useState<TopVideo | null>(null);
 
   useEffect(() => {
     const fetchTopLikedVideos = async () => {
@@ -66,9 +68,10 @@ export default function DashboardBottomSection() {
 
   return (
     <div className="flex flex-col md:flex-row gap-4 mt-6">
+      {/* Top Liked Videos */}
       <div className="w-full md:w-[70%] bg-white rounded-lg shadow p-4">
         <h4 className="text-md font-semibold mb-3">
-          Video nhiều lượt thích nhất tuần
+          Video nhiều lượt thích nhất tháng
         </h4>
         <div className="overflow-auto">
           <table className="w-full text-sm text-left border border-gray-200">
@@ -88,8 +91,12 @@ export default function DashboardBottomSection() {
                   key={video.id}
                   className="border-t hover:bg-gray-50 transition"
                 >
-                  <td className="p-2">
-                    {video.thumbnail.endsWith(".m3u8") ? (
+                  <td
+                    className="p-2 cursor-pointer"
+                    onClick={() => setSelectedPost(video)}
+                  >
+                    {video.thumbnail.endsWith(".m3u8") ||
+                    video.thumbnail.endsWith(".mp4") ? (
                       <VideoPreview
                         src={video.thumbnail}
                         className="w-16 h-10 object-cover rounded"
@@ -116,6 +123,7 @@ export default function DashboardBottomSection() {
         </div>
       </div>
 
+      {/* Top Users */}
       <div className="w-full md:w-[30%] bg-white rounded-lg shadow p-4">
         <h4 className="text-md font-semibold mb-3">
           Bảng xếp hạng người dùng phổ biến
@@ -141,6 +149,12 @@ export default function DashboardBottomSection() {
           ))}
         </div>
       </div>
+
+      {/* Modal preview video */}
+      <PostPreviewModal
+        post={selectedPost}
+        onClose={() => setSelectedPost(null)}
+      />
     </div>
   );
 }

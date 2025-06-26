@@ -11,6 +11,7 @@ import {
 } from "recharts";
 import { TrendingUp, TrendingDown } from "lucide-react";
 import api from "../../lib/axios";
+import Fuse from "fuse.js";
 
 type UserInfo = {
   _id?: string;
@@ -39,8 +40,10 @@ type UserInfo = {
 export default function DashboardUserDetail() {
   const [search, setSearch] = useState("");
   const [userData, setUserData] = useState<UserInfo | null>(null);
-  const [recommendedUsers, setRecommendedUsers] = useState<UserInfo[]>([]);
+  const [allUsers, setAllUsers] = useState<UserInfo[]>([]);
+  const [filteredUsers, setFilteredUsers] = useState<UserInfo[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [selectedFromDropdown, setSelectedFromDropdown] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -64,31 +67,39 @@ export default function DashboardUserDetail() {
     }
   }, []);
 
+  // Fetch danh sách gợi ý ban đầu (chỉ 1 lần)
   useEffect(() => {
-    const delayDebounce = setTimeout(() => {
-      const keyword = search.trim();
-      if (keyword) {
-        api
-          .get(`/users/admin/recommended?keyword=${keyword}`, {
-            headers: { token: true },
-          })
-          .then((res) => {
-            setRecommendedUsers(res.data.data);
-            setShowSuggestions(true);
-          })
-          .catch((err) => {
-            console.error("Lỗi gợi ý:", err);
-            setRecommendedUsers([]);
-            setShowSuggestions(false);
-          });
-      } else {
-        setRecommendedUsers([]);
-        setShowSuggestions(false);
-      }
-    }, 500);
-    return () => clearTimeout(delayDebounce);
-  }, [search]);
+    api
+      .get("/users/admin/recommended", { headers: { token: true } })
+      .then((res) => setAllUsers(res.data.data))
+      .catch((err) => console.error("Lỗi lấy all users:", err));
+  }, []);
 
+  // Tìm kiếm gần đúng bằng Fuse.js
+  useEffect(() => {
+    if (search.trim() && !selectedFromDropdown) {
+      const fuse = new Fuse(allUsers, {
+        keys: ["username", "handleName"],
+        threshold: 0.3,
+      });
+      const results = fuse.search(search.trim()).map((r) => r.item);
+      setFilteredUsers(results);
+      setShowSuggestions(results.length > 0);
+    } else {
+      setShowSuggestions(false);
+      setFilteredUsers([]);
+    }
+  }, [search, allUsers, selectedFromDropdown]);
+
+  // Reset flag selected
+  useEffect(() => {
+    if (selectedFromDropdown) {
+      const t = setTimeout(() => setSelectedFromDropdown(false), 800);
+      return () => clearTimeout(t);
+    }
+  }, [selectedFromDropdown]);
+
+  // Đóng dropdown khi click ngoài
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
@@ -112,9 +123,9 @@ export default function DashboardUserDetail() {
           className="w-full px-4 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
 
-        {showSuggestions && recommendedUsers.length > 0 && (
+        {showSuggestions && (
           <div className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-[240px] overflow-y-auto text-sm">
-            {recommendedUsers.map((user) => (
+            {filteredUsers.map((user) => (
               <div
                 key={user._id}
                 className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 cursor-pointer"
@@ -122,7 +133,8 @@ export default function DashboardUserDetail() {
                   setSearch(user.handleName);
                   fetchUserByHandle(user.handleName);
                   setShowSuggestions(false);
-                  inputRef.current?.blur(); // ✅ Gỡ focus để không hiện lại dropdown
+                  setSelectedFromDropdown(true);
+                  inputRef.current?.blur();
                 }}
               >
                 <img
