@@ -14,6 +14,9 @@ import Sidebar from "./components/SideBar";
 import Document from "./page/documentation";
 import LoginPage from "./page/login";
 import Report from "./page/report";
+import NewUsersToday from "./page/newUser";
+import NewPostsToday from "./page/newPost";
+import NewReportToday from "./page/newReport";
 
 function ProtectedLayout() {
   const location = useLocation();
@@ -57,6 +60,12 @@ function ProtectedLayout() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/users" element={<Users />} />
+          <Route path="/new-users" element={<NewUsersToday />} />
+          <Route path="/new-posts" element={<NewPostsToday />} />
+          <Route
+            path="/new-reports"
+            element={<NewReportToday />}
+          />
           <Route path="/video" element={<Video />} />
           <Route path="/reports" element={<Report />} />
           <Route path="/settings" element={<Settings />} />

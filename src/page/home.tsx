@@ -27,26 +27,26 @@ export default function Home() {
         const data = res.data;
         setStats([
           {
-            label: "Người dùng mới hôm nay",
+            label: "Người dùng",
             value: data.newUsers,
             icon: <FiUsers size={20} />,
-            link: "/user-new",
+            link: "/new-users",
             bg: "bg-blue-100",
             text: "text-blue-600",
           },
           {
-            label: "Video hôm nay",
+            label: "Bài post",
             value: data.newPosts,
             icon: <FiVideo size={20} />,
-            link: "/videos-new",
+            link: "/new-posts",
             bg: "bg-purple-100",
             text: "text-purple-600",
           },
           {
-            label: "Báo cáo hôm nay",
+            label: "Báo cáo",
             value: data.newReports,
             icon: <FiAlertCircle size={20} />,
-            link: "/reports-new",
+            link: "/new-reports",
             bg: "bg-red-100",
             text: "text-red-600",
           },
