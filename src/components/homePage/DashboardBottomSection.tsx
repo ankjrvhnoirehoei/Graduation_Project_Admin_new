@@ -29,7 +29,7 @@ export default function DashboardBottomSection() {
   useEffect(() => {
     const fetchTopLikedVideos = async () => {
       try {
-        const res = await api.get("/posts/admin/top-liked", {
+        const res = await api.get("/admin/posts/top-liked", {
           headers: { token: true },
         });
 
@@ -53,7 +53,7 @@ export default function DashboardBottomSection() {
 
     const fetchTopUsers = async () => {
       try {
-        const res = await api.get("/users/admin/top-followers", {
+        const res = await api.get("/admin/users/top-followers", {
           headers: { token: true },
         });
         setTopUsers(res.data);

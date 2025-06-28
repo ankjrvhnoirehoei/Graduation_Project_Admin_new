@@ -38,7 +38,7 @@ export default function VideoLineComparison() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await api.get("/posts/admin/last-two-weeks", {
+        const res = await api.get("/admin/posts/last-two-weeks", {
           headers: { token: true },
         });
 

@@ -51,7 +51,7 @@ export function VideoPostRadialSummary() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await api.get("/posts/admin/summary-posts", {
+        const res = await api.get("/admin/posts/summary-posts", {
           headers: { token: true },
         });
 
