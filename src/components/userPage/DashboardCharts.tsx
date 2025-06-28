@@ -76,7 +76,7 @@ export default function DashboardCharts() {
   useEffect(() => {
     const fetchPieData = async () => {
       try {
-        const res = await api.get("/posts/admin/stats/content-distribution", {
+        const res = await api.get("/admin/posts/stats/content-distribution", {
           headers: { token: true },
         });
         const data = res.data;
@@ -101,7 +101,7 @@ export default function DashboardCharts() {
     const fetchBarData = async () => {
       try {
         const res = await api.get(
-          `/users/admin/stats/new-accounts/?month=${selectedMonth}`,
+          `/admin/users/stats/new-accounts/?month=${selectedMonth}`,
           { headers: { token: true } }
         );
 

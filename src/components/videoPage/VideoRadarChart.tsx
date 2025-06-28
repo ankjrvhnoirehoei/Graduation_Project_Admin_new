@@ -47,7 +47,7 @@ export default function VideoRadarChart() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await api.get("/posts/admin/last-six-months", {
+        const res = await api.get("/admin/posts/last-six-months", {
           headers: { token: true },
         });
 

@@ -40,7 +40,7 @@ export default function VideoAreaChart() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const res = await api.get("/posts/admin/yearly-stats", {
+        const res = await api.get("/admin/posts/yearly-stats", {
           headers: { token: true },
         });
 

@@ -31,7 +31,7 @@ export default function VideoBarChart() {
   useEffect(() => {
     const fetchWeeklyStats = async () => {
       try {
-        const res = await api.get("/posts/admin/weekly", {
+        const res = await api.get("/admin/posts/weekly", {
           headers: { token: true },
         });
         const transformed = res.data.map((item: any) => ({

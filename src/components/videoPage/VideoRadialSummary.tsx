@@ -39,7 +39,7 @@ export default function VideoRadialSummary() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await api.get("/posts/admin/compare-last-6-months", {
+        const res = await api.get("/admin/posts/compare-last-6-months", {
           headers: { token: true },
         });
 

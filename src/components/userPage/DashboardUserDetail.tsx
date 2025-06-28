@@ -51,7 +51,7 @@ export default function DashboardUserDetail() {
 
   const fetchUserByHandle = async (handle: string) => {
     try {
-      const res = await api.get(`/users/admin/search/?keyword=${handle}`, {
+      const res = await api.get(`/admin/users/search/?keyword=${handle}`, {
         headers: { token: true },
       });
       setUserData(res.data);
@@ -70,7 +70,7 @@ export default function DashboardUserDetail() {
   // Fetch danh sách gợi ý ban đầu (chỉ 1 lần)
   useEffect(() => {
     api
-      .get("/users/admin/recommended", { headers: { token: true } })
+      .get("/admin/users/recommended", { headers: { token: true } })
       .then((res) => setAllUsers(res.data.data))
       .catch((err) => console.error("Lỗi lấy all users:", err));
   }, []);

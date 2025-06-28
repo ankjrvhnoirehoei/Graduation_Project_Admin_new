@@ -21,7 +21,7 @@ export default function Home() {
   useEffect(() => {
     const fetchTodayStats = async () => {
       try {
-        const res = await api.get("/users/admin/today-stats", {
+        const res = await api.get("/admin/users/today-stats", {
           headers: { token: true },
         });
         const data = res.data;
