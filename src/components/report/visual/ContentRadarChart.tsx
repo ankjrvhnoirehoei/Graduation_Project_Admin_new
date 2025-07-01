@@ -1,10 +1,10 @@
 import {
-  Radar,
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
   ResponsiveContainer,
+  CartesianGrid,
   Legend,
   Tooltip,
 } from 'recharts';
@@ -21,9 +21,8 @@ interface ContentRadarProps {
 
 export function ContentRadarChart({ rangeType = 'year', start, end }: ContentRadarProps) {
   const today = new Date();
-  let from = start ?? (rangeType === '7days' ? subDays(today, 6) : rangeType === '30days' ? subDays(today, 29) : subMonths(today, 11));
-  let to = end ?? today;
-
+  const from = start ?? (rangeType === '7days' ? subDays(today, 6) : rangeType === '30days' ? subDays(today, 29) : subMonths(today, 11));
+  const to = end ?? today;
   const spanDays = differenceInDays(to, from);
   const useMonths = spanDays > 60;
   const labels = useMonths
@@ -32,7 +31,7 @@ export function ContentRadarChart({ rangeType = 'year', start, end }: ContentRad
 
   const rand = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
   const chartData = labels.map((label) => ({
-    date: label,
+    period: label,
     posts: rand(10, 80),
     reels: rand(5, 60),
     stories: rand(8, 70),
@@ -40,16 +39,16 @@ export function ContentRadarChart({ rangeType = 'year', start, end }: ContentRad
 
   return (
     <ResponsiveContainer width="100%" height="100%">
-      <RadarChart data={chartData} margin={{ top: 10, right: 10, bottom: 10, left: 10 }}>
-        <PolarGrid gridType="circle" radialLines={false} stroke="#E5E7EB" />
-        <PolarAngleAxis dataKey="date" tick={{ fontSize: 10 }} />
-        <PolarRadiusAxis angle={30} domain={[0, 'dataMax']} />
-        <Radar name="Bài đăng" dataKey="posts" stroke="#6366F1" fill="#6366F1" fillOpacity={0.4} />
-        <Radar name="Reels" dataKey="reels" stroke="#EC4899" fill="#EC4899" fillOpacity={0.4} />
-        <Radar name="Stories" dataKey="stories" stroke="#10B981" fill="#10B981" fillOpacity={0.4} />
-        <Legend wrapperStyle={{ fontSize: 12 }} />
+      <BarChart data={chartData} margin={{ top: 10, right: 10, bottom: 10, left: 0 }}>
+        <CartesianGrid stroke="#E5E7EB" strokeDasharray="3 3" vertical={false} />
+        <XAxis dataKey="period" axisLine={false} tickLine={false} tick={{ fontSize: 12 }} />
+        <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12 }} />
         <Tooltip />
-      </RadarChart>
+        <Legend wrapperStyle={{ fontSize: 12 }} />
+        <Bar dataKey="posts" stackId="a" fill="#6366F1" />
+        <Bar dataKey="reels" stackId="a" fill="#EC4899" />
+        <Bar dataKey="stories" stackId="a" fill="#10B981" />
+      </BarChart>
     </ResponsiveContainer>
   );
 }

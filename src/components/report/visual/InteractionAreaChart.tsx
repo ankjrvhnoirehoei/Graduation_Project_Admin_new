@@ -1,6 +1,6 @@
 import {
-  AreaChart,
-  Area,
+  LineChart,
+  Line,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -21,9 +21,8 @@ interface InteractionAreaProps {
 
 export function InteractionAreaChart({ rangeType = 'year', start, end }: InteractionAreaProps) {
   const today = new Date();
-  let from = start ?? (rangeType === '7days' ? subDays(today, 6) : rangeType === '30days' ? subDays(today, 29) : subMonths(today, 11));
-  let to = end ?? today;
-
+  const from = start ?? (rangeType === '7days' ? subDays(today, 6) : rangeType === '30days' ? subDays(today, 29) : subMonths(today, 11));
+  const to = end ?? today;
   const spanDays = differenceInDays(to, from);
   const useMonths = spanDays > 60;
   const labels = useMonths
@@ -32,7 +31,7 @@ export function InteractionAreaChart({ rangeType = 'year', start, end }: Interac
 
   const rand = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
   const chartData = labels.map((label) => ({
-    date: label,
+    period: label,
     likes: rand(200, 1000),
     comments: rand(20, 200),
     follows: rand(5, 100),
@@ -40,16 +39,16 @@ export function InteractionAreaChart({ rangeType = 'year', start, end }: Interac
 
   return (
     <ResponsiveContainer width="100%" height="100%">
-      <AreaChart data={chartData} margin={{ top: 10, right: 20, bottom: 10, left: 0 }}>
+      <LineChart data={chartData} margin={{ top: 10, right: 20, bottom: 10, left: 0 }}>
         <CartesianGrid stroke="#E5E7EB" strokeDasharray="3 3" vertical={false} />
-        <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 12 }} />
+        <XAxis dataKey="period" axisLine={false} tickLine={false} tick={{ fontSize: 12 }} />
         <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12 }} />
         <Tooltip />
         <Legend wrapperStyle={{ fontSize: 12 }} />
-        <Area type="monotone" dataKey="likes" stackId="1" stroke="#3B82F6" fill="#3B82F6" fillOpacity={0.4} />
-        <Area type="monotone" dataKey="comments" stackId="1" stroke="#EC4899" fill="#EC4899" fillOpacity={0.4} />
-        <Area type="monotone" dataKey="follows" stackId="1" stroke="#10B981" fill="#10B981" fillOpacity={0.4} />
-      </AreaChart>
+        <Line type="monotone" dataKey="likes" stroke="#3B82F6" strokeWidth={2} dot={{ r: 3 }} />
+        <Line type="monotone" dataKey="comments" stroke="#EC4899" strokeWidth={2} dot={{ r: 3 }} />
+        <Line type="monotone" dataKey="follows" stroke="#10B981" strokeWidth={2} dot={{ r: 3 }} />
+      </LineChart>
     </ResponsiveContainer>
   );
 }
