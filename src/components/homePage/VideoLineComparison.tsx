@@ -21,11 +21,11 @@ import api from "../../lib/axios";
 
 const chartConfig = {
   thisWeek: {
-    label: "Tuần này",
+    label: "Tuần trước",
     color: "var(--chart-1)",
   },
   lastWeek: {
-    label: "Tuần trước",
+    label: "Tuần kia",
     color: "var(--chart-2)",
   },
 } satisfies ChartConfig;
@@ -111,7 +111,7 @@ export default function VideoLineComparison() {
         <div className="flex w-full items-start gap-2 text-sm">
           <div className="grid gap-2">
             <div className="flex items-center gap-2 font-medium text-green-600">
-              Tuần này tăng 7.4% <TrendingUp className="h-4 w-4" />
+              Tuần trước tăng 7.4% <TrendingUp className="h-4 w-4" />
             </div>
             <div className="text-muted-foreground">
               So sánh tổng số video giữa 2 tuần

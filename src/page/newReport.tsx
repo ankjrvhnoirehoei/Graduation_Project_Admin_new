@@ -30,7 +30,6 @@ export default function NewReportToday() {
   const tableTabs: { label: string; value: TableType }[] = [
     { label: "Người dùng mới", value: "users" },
     { label: "Video mới", value: "videos" },
-    { label: "Hiệu suất nội dung", value: "performance" },
   ];
 
   return (

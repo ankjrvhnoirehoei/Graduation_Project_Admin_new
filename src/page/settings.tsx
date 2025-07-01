@@ -120,23 +120,6 @@ export default function Settings() {
             />
           </div>
 
-          <Separator />
-
-          <div>
-            <Label>Giao diện</Label>
-            <Select
-              value={form.theme}
-              onValueChange={(value) => handleChange("theme", value)}
-            >
-              <SelectTrigger className="w-40 mt-2">
-                <SelectValue placeholder="Giao diện" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="light">Sáng</SelectItem>
-                <SelectItem value="dark">Tối</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
         </CardContent>
       </Card>
 

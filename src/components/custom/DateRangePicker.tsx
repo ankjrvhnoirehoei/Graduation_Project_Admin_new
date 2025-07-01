@@ -8,22 +8,24 @@ interface Props {
 
 export default function DateRangePicker({ value, onChange }: Props) {
   const now = new Date();
+  // Jan 1 of this year
+  const startOfYear = new Date(now.getFullYear(), 0, 1);
 
   const presets: DateRange[] = [
     {
-      label: "Hôm nay",
-      start: new Date(now.setHours(0, 0, 0, 0)),
-      end: new Date(),
+      label: "Năm nay",
+      start: startOfYear,
+      end: now,
     },
     {
       label: "7 ngày qua",
-      start: new Date(new Date().setDate(now.getDate() - 6)),
-      end: new Date(),
+      start: new Date(now.getTime() - 6 * 24 * 60 * 60 * 1000),
+      end: now,
     },
     {
       label: "30 ngày qua",
-      start: new Date(new Date().setDate(now.getDate() - 29)),
-      end: new Date(),
+      start: new Date(now.getTime() - 29 * 24 * 60 * 60 * 1000),
+      end: now,
     },
   ];
 
@@ -38,19 +40,6 @@ export default function DateRangePicker({ value, onChange }: Props) {
           {preset.label}
         </Button>
       ))}
-
-      <Button
-        variant={value.label === "Tùy chỉnh" ? "default" : "outline"}
-        onClick={() => {
-          onChange({
-            label: "Tùy chỉnh",
-            start: new Date(),
-            end: new Date(),
-          });
-        }}
-      >
-        Tùy chỉnh
-      </Button>
     </div>
   );
 }

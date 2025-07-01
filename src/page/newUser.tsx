@@ -185,27 +185,6 @@ export default function NewUsersToday() {
                       setEditMode(true);
                     }}
                   >
-                    <Edit className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    onClick={() => {
-                      setSelectedUser(user);
-                      setLockMode(true);
-                    }}
-                  >
-                    {user.status === "Bị khóa" ? (
-                      <Unlock className="w-4 h-4" />
-                    ) : (
-                      <Lock className="w-4 h-4" />
-                    )}
-                  </Button>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    onClick={() => console.log("Delete", user.id)}
-                  >
                     <Trash className="w-4 h-4 text-red-500" />
                   </Button>
                 </TableCell>
