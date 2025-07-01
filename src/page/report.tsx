@@ -67,34 +67,34 @@ export default function Report() {
 
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="h-[350px]">
+        <Card className="h-[444px]">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <BarChart2 className="w-5 h-5" />
               Tăng trưởng người dùng
             </CardTitle>
           </CardHeader>
-          <CardContent className="h-[300px]"> <UserGrowthChart /> </CardContent>
+          <CardContent className="h-[400px]"> <UserGrowthChart data={[]} /> </CardContent>
         </Card>
 
-        <Card className="h-[350px]">
+        <Card className="h-[444px]">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Video className="w-5 h-5" />
               Hoạt động bài viết (posts, reels và stories)
             </CardTitle>
           </CardHeader>
-          <CardContent className="h-[300px]"> <ContentRadarChart /></CardContent>
+          <CardContent className="h-[400px]"> <ContentRadarChart data={[]} /></CardContent>
         </Card>
 
-        <Card className="h-[350px]">
+        <Card className="h-[444px]">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <MessageCircle className="w-5 h-5" />
               Tương tác, Bình luận và Theo dõi
             </CardTitle>
           </CardHeader>
-          <CardContent className="h-[300px]"> <InteractionAreaChart /></CardContent>
+          <CardContent className="h-[400px]"> <InteractionAreaChart data={[]} /></CardContent>
         </Card>
       </div>
 

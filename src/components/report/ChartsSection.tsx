@@ -2,6 +2,7 @@ import { eachDayOfInterval, format } from 'date-fns';
 import { UserGrowthChart } from './visual/UserGrowthChart';
 import { ContentRadarChart } from './visual/ContentRadarChart';
 import { InteractionAreaChart } from './visual/InteractionAreaChart';
+import { CardContent } from '../ui/card';
 
 interface Props {
   dateRange: { start: Date; end: Date; label: string };
@@ -36,29 +37,29 @@ export default function ChartsSection({ dateRange }: Props) {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <div className="bg-white p-4 rounded-lg shadow h-[300px]">
+      <div className="bg-white p-4 rounded-lg shadow h-[444px]">
         <h3 className="text-sm font-semibold text-gray-700 mb-2">
           Biểu đồ tăng trưởng người dùng ({label})
         </h3>
-        <UserGrowthChart start={start} end={end} data={usersData} />
+        <CardContent className='h-[400px]'> <UserGrowthChart start={start} end={end} data={usersData} /> </CardContent>
       </div>
 
-      <div className="bg-white p-4 rounded-lg shadow h-[300px]">
+      <div className="bg-white p-4 rounded-lg shadow h-[444px]">
         <h3 className="text-sm font-semibold text-gray-700 mb-2">
           Biểu đồ hoạt động video ({label})
         </h3>
-        <ContentRadarChart start={start} end={end} data={contentData} />
+        <CardContent className='h-[400px]'> <ContentRadarChart start={start} end={end} data={contentData} /> </CardContent>
       </div>
 
-      <div className="bg-white p-4 rounded-lg shadow h-[300px]">
+      <div className="bg-white p-4 rounded-lg shadow h-[444px]">
         <h3 className="text-sm font-semibold text-gray-700 mb-2">
           Biểu đồ tương tác ({label})
         </h3>
-        <InteractionAreaChart
+        <CardContent className='h-[400px]'> <InteractionAreaChart 
           start={start}
           end={end}
           data={interactionsData}
-        />
+        /></CardContent>
       </div>
     </div>
   );
