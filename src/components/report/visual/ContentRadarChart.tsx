@@ -1,53 +1,71 @@
+import React, { useState, useEffect } from 'react';
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  ResponsiveContainer,
-  CartesianGrid,
-  Legend,
-  Tooltip,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, Tooltip, ResponsiveContainer
 } from 'recharts';
-import { differenceInDays, eachDayOfInterval, eachMonthOfInterval, format, subDays, subMonths } from 'date-fns';
+import api from '../../../lib/axios';
+import { RangeType } from '../../../components/report/type';
 
-type RangeType = 'year' | '30days' | '7days';
-
-interface ContentRadarProps {
-  rangeType?: RangeType;
-  start?: Date;
-  end?: Date;
-  data: { date: string; posts: number; reels: number; stories: number; }[]
+interface ContentPoint {
+  period: string;
+  posts: number;
+  reels: number;
+  stories: number;
+}
+interface ApiResponse {
+  success: boolean;
+  range: RangeType;
+  unit: string;
+  from: string;
+  to: string;
+  data: ContentPoint[];
 }
 
-export function ContentRadarChart({ rangeType = 'year', start, end }: ContentRadarProps) {
-  const today = new Date();
-  const from = start ?? (rangeType === '7days' ? subDays(today, 6) : rangeType === '30days' ? subDays(today, 29) : subMonths(today, 11));
-  const to = end ?? today;
-  const spanDays = differenceInDays(to, from);
-  const useMonths = spanDays > 60;
-  const labels = useMonths
-    ? eachMonthOfInterval({ start: from, end: to }).map((d) => format(d, 'MMM'))
-    : eachDayOfInterval({ start: from, end: to }).map((d) => format(d, 'dd/MM'));
+interface Props {
+  rangeType?: RangeType;
+}
 
-  const rand = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
-  const chartData = labels.map((label) => ({
-    period: label,
-    posts: rand(10, 80),
-    reels: rand(5, 60),
-    stories: rand(8, 70),
-  }));
+export function ContentRadarChart({ rangeType = 'year' }: Props) {
+  const [chartData, setChartData] = useState<ContentPoint[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const fetch = async () => {
+      setLoading(true);
+      setError('');
+      try {
+        const res = await api.get<ApiResponse>('/admin/content', {
+          headers: { token: true },
+          params: { range: rangeType }
+        });
+        if (res.data.success) {
+          setChartData(res.data.data);
+        } else {
+          setError('Không thể tải dữ liệu nội dung');
+        }
+      } catch (e: any) {
+        setError(e.response?.data?.message || 'Lỗi khi tải dữ liệu nội dung');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetch();
+  }, [rangeType]);
+
+  if (loading) return <div className="flex h-full items-center justify-center">Đang tải...</div>;
+  if (error)   return <div className="text-red-500 text-sm">{error}</div>;
 
   return (
     <ResponsiveContainer width="100%" height="100%">
-      <BarChart data={chartData} margin={{ top: 10, right: 10, bottom: 10, left: 0 }}>
+      <BarChart data={chartData} margin={{ top:10, right:10, bottom:10, left:0 }}>
         <CartesianGrid stroke="#E5E7EB" strokeDasharray="3 3" vertical={false} />
-        <XAxis dataKey="period" axisLine={false} tickLine={false} tick={{ fontSize: 12 }} />
-        <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12 }} />
+        <XAxis dataKey="period" axisLine={false} tickLine={false} tick={{ fontSize:12 }} />
+        <YAxis axisLine={false} tickLine={false} tick={{ fontSize:12 }} />
         <Tooltip />
-        <Legend wrapperStyle={{ fontSize: 12 }} />
-        <Bar dataKey="posts" stackId="a" fill="#6366F1" />
-        <Bar dataKey="reels" stackId="a" fill="#EC4899" />
-        <Bar dataKey="stories" stackId="a" fill="#10B981" />
+        <Legend wrapperStyle={{ fontSize:12 }} />
+        <Bar dataKey="posts"  stackId="a" fill="#6366F1" />
+        <Bar dataKey="reels"  stackId="a" fill="#EC4899" />
+        <Bar dataKey="stories"stackId="a" fill="#10B981" />
       </BarChart>
     </ResponsiveContainer>
   );

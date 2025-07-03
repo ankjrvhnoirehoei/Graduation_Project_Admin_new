@@ -62,10 +62,7 @@ function ProtectedLayout() {
           <Route path="/users" element={<Users />} />
           <Route path="/new-users" element={<NewUsersToday />} />
           <Route path="/new-posts" element={<NewPostsToday />} />
-          <Route
-            path="/new-reports"
-            element={<NewReportToday />}
-          />
+          <Route path="/new-reports" element={<NewReportToday />} />
           <Route path="/video" element={<Video />} />
           <Route path="/reports" element={<Report />} />
           <Route path="/settings" element={<Settings />} />

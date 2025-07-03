@@ -1,218 +1,390 @@
-import { useEffect, useState } from "react";
-import { Input } from "../components/ui/input";
-import { Button } from "../components/ui/button";
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableRow,
-  TableHead,
-  TableCell,
-} from "../components/ui/table";
+  Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
+} from '../components/ui/table';
+import { Input } from '../components/ui/input';
+import { Button } from '../components/ui/button';
 import {
-  Select,
-  SelectTrigger,
-  SelectContent,
-  SelectItem,
-  SelectValue,
-} from "../components/ui/select";
-import { Download, Eye, Lock, Unlock, Edit, Trash } from "lucide-react";
-import UserDialog from "../components/userPage/UserDialog";
+  Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
+} from '../components/ui/select';
+import { Download, Eye, Trash, X, User, Mail, Calendar, Crown, AlertCircle } from 'lucide-react';
+import api from '../lib/axios';
 
-const mockData = [
-  {
-    id: 1,
-    name: "Nguyễn Văn A",
-    email: "nguyenvana@example.com",
-    avatar:
-      "https://i.pinimg.com/736x/e4/21/bd/e421bd984c60b6ab64ba076745a1c667.jpg",
-    createdAt: "2025-06-26 08:12:34",
-    status: "Đang hoạt động",
-  },
-  {
-    id: 2,
-    name: "Trần Thị B",
-    email: "tranthib@example.com",
-    avatar:
-      "https://i.pinimg.com/736x/6b/37/30/6b3730d5559f7ebc1672dbb580d4f207.jpg",
-    createdAt: "2025-06-26 09:22:10",
-    status: "Chưa xác minh email",
-  },
-  {
-    id: 3,
-    name: "Lê Văn C",
-    email: "levanc@example.com",
-    avatar:
-      "https://i.pinimg.com/736x/a0/66/20/a066206b0a917bad8a6a9f78c01959dc.jpg",
-    createdAt: "2025-06-26 10:05:44",
-    status: "Bị khóa",
-  },
-  {
-    id: 4,
-    name: "Phạm Thị D",
-    email: "phamthid@example.com",
-    avatar:
-      "https://i.pinimg.com/736x/af/09/95/af09952d2563c2710c0ba165079f9db6.jpg",
-    createdAt: "2025-06-26 11:15:20",
-    status: "Đang hoạt động",
-  },
-  {
-    id: 5,
-    name: "Hoàng Văn E",
-    email: "hoangvane@example.com",
-    avatar:
-      "https://i.pinimg.com/736x/cc/35/eb/cc35ebe3013da74cea8ace5f3bbcdf8f.jpg",
-    createdAt: "2025-06-26 12:30:45",
-    status: "Chưa xác minh email",
-  },
-];
+function EnhancedUserModal({ user, onClose }: { user: any; onClose: () => void }) {
+  if (!user) return null;
+
+  // Handle click outside modal
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
+  // Handle Esc key press
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    
+    // Prevent body scroll when modal is open
+    document.body.style.overflow = 'hidden';
+    document.addEventListener('keydown', handleKeyDown);
+    
+    return () => {
+      document.body.style.overflow = 'unset';
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [onClose]);
+
+  // Vietnamese field translations
+  const fieldTranslations: { [key: string]: string } = {
+    _id: 'ID',
+    username: 'Tên người dùng',
+    handleName: 'Tên hiển thị',
+    email: 'Email',
+    profilePic: 'Ảnh đại diện',
+    isVip: 'Tài khoản VIP',
+    deletedAt: 'Đã xóa',
+    createdAt: 'Ngày tạo',
+    dateOfBirth: 'Ngày sinh',
+    updatedAt: 'Cập nhật lần cuối',
+    phone: 'Số điện thoại',
+    address: 'Địa chỉ',
+    bio: 'Tiểu sử',
+    verified: 'Đã xác minh',
+    lastLogin: 'Lần đăng nhập cuối'
+  };
+
+  // Format field values
+  const formatValue = (key: string, value: any) => {
+    if (value === null || value === undefined) return 'Không có';
+    
+    switch (key) {
+      case 'isVip':
+      case 'deletedAt':
+      case 'verified':
+        return value ? 'Có' : 'Không';
+      case 'createdAt':
+      case 'updatedAt':
+      case 'lastLogin':
+      case 'dateOfBirth':
+        return value ? new Date(value).toLocaleString('vi-VN') : 'Không có';
+      default:
+        return String(value);
+    }
+  };
+
+  // Get icon for field
+  const getFieldIcon = (key: string) => {
+    switch (key) {
+      case 'username':
+      case 'handleName':
+        return <User className="w-4 h-4" />;
+      case 'email':
+        return <Mail className="w-4 h-4" />;
+      case 'createdAt':
+      case 'dateOfBirth':
+        return <Calendar className="w-4 h-4" />;
+      case 'isVip':
+        return <Crown className="w-4 h-4" />;
+      case 'deletedAt':
+        return <AlertCircle className="w-4 h-4" />;
+      default:
+        return null;
+    }
+  };
+
+  // Use createPortal to render modal at document body level
+  return createPortal(
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[9999]"
+      onClick={handleBackdropClick}
+    >
+      <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
+        {/* Header */}
+        <div className="bg-white border-b border-gray-200 px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                <User className="w-5 h-5 text-blue-600" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-gray-900">Chi tiết người dùng</h2>
+                <p className="text-sm text-gray-500">{user.handleName || user.username}</p>
+              </div>
+            </div>
+            <Button 
+              variant="ghost" 
+              size="icon"
+              onClick={onClose}
+              className="hover:bg-gray-100"
+            >
+              <X className="w-5 h-5" />
+            </Button>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
+          {/* Profile Picture Section */}
+          {user.profilePic && (
+            <div className="mb-6 text-center">
+              <div className="inline-block">
+                <img 
+                  src={user.profilePic} 
+                  alt="Profile"
+                  className="w-24 h-24 rounded-full object-cover border-4 border-gray-200 shadow-lg"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                  }}
+                />
+              </div>
+              <p className="text-sm text-gray-500 mt-2">Ảnh đại diện</p>
+            </div>
+          )}
+
+          {/* User Details Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {Object.entries(user)
+              .filter(([key]) => key !== 'profilePic' && key !== '__v') // Handle profile pic separately
+              .map(([key, value]) => (
+                <div 
+                  key={key}
+                  className="bg-gray-50 rounded-lg p-4 border border-gray-200 hover:bg-gray-100 transition-colors"
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    {getFieldIcon(key)}
+                    <span className="text-sm font-medium text-gray-700">
+                      {fieldTranslations[key] || key}
+                    </span>
+                  </div>
+                  <div className="text-gray-900 font-medium break-all">
+                    {formatValue(key, value)}
+                  </div>
+                </div>
+              ))}
+          </div>
+
+          {/* VIP Status Badge */}
+          {user.isVip && (
+            <div className="mt-6 flex justify-center">
+              <div className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-white px-4 py-2 rounded-full flex items-center gap-2 shadow-lg">
+                <Crown className="w-4 h-4" />
+                <span className="font-medium">Tài khoản VIP</span>
+              </div>
+            </div>
+          )}
+
+          {/* Deleted Status */}
+          {user.deletedAt && (
+            <div className="mt-4 flex justify-center">
+              <div className="bg-red-100 border border-red-200 text-red-700 px-4 py-2 rounded-full flex items-center gap-2">
+                <AlertCircle className="w-4 h-4" />
+                <span className="font-medium">Tài khoản đã bị xóa</span>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="bg-gray-50 border-t border-gray-200 px-6 py-4">
+          <div className="flex justify-end gap-3">
+            <Button variant="outline" onClick={onClose}>
+              Đóng
+            </Button>
+            <Button 
+              className="bg-blue-600 hover:bg-blue-700"
+              onClick={onClose}
+            >
+              Xác nhận
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>,
+    document.body // Render at document.body level
+  );
+}
 
 export default function NewUsersToday() {
-  const [users, setUsers] = useState(mockData);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterStatus, setFilterStatus] = useState("none");
-  const [selectedUser, setSelectedUser] = useState<any>(null);
-  const [editMode, setEditMode] = useState(false);
-  const [lockMode, setLockMode] = useState(false);
-  const [pin, setPin] = useState("");
+  interface User {
+    _id: string;
+    username: string;
+    handleName: string;
+    email: string;
+    profilePic?: string;
+    isVip: boolean;
+    deletedAt: boolean;
+    createdAt: string;
+    dateOfBirth?: string;
+  }
+  const [users, setUsers] = useState<User[]>([]);
+  const [page, setPage] = useState(1);
+  const limit = 10;
+  const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filter, setFilter] = useState<'all'|'vip'|'deleted'>('all');
 
-  const filteredUsers = users.filter((u) => {
-    const term = searchTerm.toLowerCase();
-    return (
-      (u.name.toLowerCase().includes(term) ||
-        u.email.toLowerCase().includes(term)) &&
-      (filterStatus === "none" || u.status === filterStatus)
-    );
+  const [detailUser, setDetailUser] = useState<User| null>(null);
+
+  // fetch page
+  useEffect(() => {
+    (async () => {
+      setLoading(true); setError('');
+      try {
+        const res = await api.get(`/admin/users/new`, {
+          headers: { token: true },
+          params: { range: '7days', page, limit }
+        });
+        if (res.data.success) {
+          setUsers(res.data.data.items);
+          setTotalPages(res.data.data.pagination.totalPages);
+        } else {
+          setError('Không thể tải người dùng mới');
+        }
+      } catch (e: any) {
+        setError(e.response?.data?.message || 'Lỗi tải dữ liệu');
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [page]);
+
+  // local filters
+  const filtered = users.filter(u => {
+    if (searchTerm && !u.handleName.toLowerCase().includes(searchTerm.toLowerCase())) return false;
+    if (filter === 'vip' && !u.isVip) return false;
+    if (filter === 'deleted' && !u.deletedAt) return false;
+    return true;
   });
 
-  const handleEditChange = (field: string, value: string) => {
-    if (selectedUser) {
-      setSelectedUser({ ...selectedUser, [field]: value });
+  // toggle delete
+  const toggleDelete = async (user: User) => {
+    try {
+      const res = await api.patch(`/admin/users/disable/${user._id}`, {}, { headers: { token: true } });
+      if (res.data.success) {
+        setUsers(us =>
+          us.map(u =>
+            u._id === user._id
+              ? { ...u, deletedAt: res.data.isDeleted }
+              : u
+          )
+        );
+      }
+    } catch {
+      // handle error
     }
   };
 
   return (
-    <div className="p-8 space-y-8 bg-white shadow rounded-xl max-w-7xl mx-auto">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-2xl font-bold text-gray-800">
-          Người dùng mới hôm nay
-        </h1>
-        <p className="text-4xl font-bold text-blue-600">{users.length}</p>
+    <div className="p-8 space-y-6 bg-white shadow rounded-xl max-w-7xl mx-auto">
+      <div className="flex justify-between items-end">
+        <div>
+          <h1 className="text-2xl font-bold">Người dùng mới</h1>
+          <p className="text-sm text-gray-500">
+            Hiển thị {filtered.length} / {users.length} kết quả
+          </p>
+        </div>
+        <Button variant="outline" className="flex items-center gap-2">
+          <Download className="w-4 h-4" /> Export Excel
+        </Button>
       </div>
 
-      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+      <div className="flex flex-wrap gap-4">
         <Input
-          placeholder="Tìm theo tên hoặc email"
+          placeholder="Tìm theo handleName"
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full sm:w-64"
+          onChange={e => setSearchTerm(e.target.value)}
+          className="flex-1 min-w-[200px]"
         />
-
-        <Select value={filterStatus} onValueChange={setFilterStatus}>
-          <SelectTrigger className="w-full sm:w-52">
-            <SelectValue placeholder="Lọc trạng thái" />
+        <Select value={filter} onValueChange={v => setFilter(v as any)}>
+          <SelectTrigger className="min-w-[150px]">
+            <SelectValue placeholder="Lọc" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="none">Tất cả</SelectItem>
-            <SelectItem value="Đang hoạt động">Đang hoạt động</SelectItem>
-            <SelectItem value="Chưa xác minh email">
-              Chưa xác minh email
-            </SelectItem>
-            <SelectItem value="Bị khóa">Bị khóa</SelectItem>
+            <SelectItem value="all">Tất cả</SelectItem>
+            <SelectItem value="vip">VIP</SelectItem>
+            <SelectItem value="deleted">Đã xóa</SelectItem>
           </SelectContent>
         </Select>
-
-        <Button
-          variant="default"
-          className="flex items-center gap-2 whitespace-nowrap w-full sm:w-auto"
-        >
-          <Download className="w-4 h-4" />
-          Export Excel
-        </Button>
       </div>
 
       <div className="overflow-x-auto border rounded-lg">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-12 text-center">#</TableHead>
-              <TableHead className="min-w-[200px]">Tên / Email</TableHead>
-              <TableHead>Thời gian đăng ký</TableHead>
-              <TableHead>Trạng thái</TableHead>
-              <TableHead className="text-right pr-4">Hành động</TableHead>
+              <TableHead>#</TableHead>
+              <TableHead>Username/Handle</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead>Joined</TableHead>
+              <TableHead>VIP</TableHead>
+              <TableHead>Deleted</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredUsers.map((user, idx) => (
-              <TableRow key={user.id}>
-                <TableCell className="text-center font-medium">
-                  {idx + 1}
-                </TableCell>
-                <TableCell>
-                  <div className="font-semibold text-gray-800">{user.name}</div>
-                  <div className="text-sm text-gray-500">{user.email}</div>
-                </TableCell>
-                <TableCell>{user.createdAt}</TableCell>
-                <TableCell>
-                  <span
-                    className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
-                      user.status === "Đang hoạt động"
-                        ? "bg-green-100 text-green-700"
-                        : user.status === "Chưa xác minh email"
-                        ? "bg-yellow-100 text-yellow-800"
-                        : "bg-red-100 text-red-700"
-                    }`}
-                  >
-                    {user.status}
-                  </span>
-                </TableCell>
-                <TableCell className="text-right space-x-1">
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    onClick={() => {
-                      setSelectedUser(user);
-                      setEditMode(false);
-                    }}
-                  >
-                    <Eye className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    onClick={() => {
-                      setSelectedUser(user);
-                      setEditMode(true);
-                    }}
-                  >
-                    <Trash className="w-4 h-4 text-red-500" />
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
+            {loading
+              ? Array(limit).fill(0).map((_, i) => (
+                  <TableRow key={i} className="animate-pulse">
+                    <TableCell>{i+1}</TableCell>
+                    <TableCell colSpan={6} className="h-8 bg-gray-200" />
+                  </TableRow>
+                ))
+              : filtered.map((u, i) => (
+                  <TableRow key={u._id}>
+                    <TableCell>{(page-1)*limit + i + 1}</TableCell>
+                    <TableCell>
+                      <div>{u.username}</div>
+                      <div className="text-sm text-gray-500">{u.handleName}</div>
+                    </TableCell>
+                    <TableCell>{u.email}</TableCell>
+                    <TableCell>{new Date(u.createdAt).toLocaleString()}</TableCell>
+                    <TableCell>{u.isVip ? '✔' : '–'}</TableCell>
+                    <TableCell>{u.deletedAt ? '✔' : '–'}</TableCell>
+                    <TableCell className="text-right space-x-1">
+                      {/* Eye: show details */}
+                      <Button size="icon" variant="ghost" onClick={() => setDetailUser(u)}>
+                        <Eye className="w-4 h-4" />
+                      </Button>
+                      {/* Trash: toggle delete */}
+                      <Button size="icon" variant="ghost" onClick={() => toggleDelete(u)}>
+                        <Trash className="w-4 h-4 text-red-500" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+            }
           </TableBody>
         </Table>
       </div>
 
-      <div className="flex justify-end gap-2">
-        <Button variant="outline">Trang trước</Button>
-        <Button variant="outline">Trang sau</Button>
+      {/* pagination */}
+      <div className="flex justify-between items-center">
+        <Button
+          variant="outline"
+          disabled={page === 1}
+          onClick={() => setPage(p => p-1)}
+        >Trang trước</Button>
+        <span>{page} / {totalPages}</span>
+        <Button
+          variant="outline"
+          disabled={page === totalPages}
+          onClick={() => setPage(p => p+1)}
+        >Trang sau</Button>
       </div>
 
-      <UserDialog
-        selectedUser={selectedUser}
-        editMode={editMode}
-        lockMode={lockMode}
-        pin={pin}
-        onClose={() => {
-          setSelectedUser(null);
-          setEditMode(false);
-          setLockMode(false);
-          setPin("");
-        }}
-        onEditChange={handleEditChange}
-        onPinChange={setPin}
-      />
+      {/* Enhanced Detail modal */}
+      {detailUser && (
+        <EnhancedUserModal
+          user={detailUser}
+          onClose={() => setDetailUser(null)}
+        />
+      )}
     </div>
   );
 }

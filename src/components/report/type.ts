@@ -11,3 +11,5 @@ export interface Filters {
 }
 
 export type TableType = "users" | "videos" | "performance";
+
+export type RangeType = "7days" | "30days" | "year";

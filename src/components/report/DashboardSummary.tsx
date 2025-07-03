@@ -1,67 +1,77 @@
-interface SummaryCard {
-  label: string;
-  value: number | string;
-  comparison: number | string;
+import React, { useState, useEffect } from 'react';
+import api from '../../lib/axios';
+import { RangeType } from '../../components/report/type';
+
+const rangeTypeLabel: Record<RangeType, string> = {
+  '7days':  '7 ngày trước',
+  '30days': '30 ngày trước',
+  'year':   'Năm nay',
+};
+
+interface ApiResponse {
+  success: boolean;
+  range: RangeType;
+  unit: string;
+  from: string;
+  to: string;
+  data: {
+    users: number;
+    contents: number;
+    views: number;
+    comments: number;
+    fluctuation: { percentageChange: number; trend: string };
+  };
 }
 
 interface Props {
-  dateRange: {
-    start: Date;
-    end: Date;
-    label: string;
-  };
-  filters: {
-    platform: string;
-    category: string;
-    uploader: string;
-  };
+  rangeType: RangeType;
 }
 
-export default function DashboardSummary({ dateRange, filters }: Props) {
-  // Giả lập dữ liệu tạm thời
-  const mockData: SummaryCard[] = [
-    {
-      label: "Người dùng mới",
-      value: 124,
-      comparison: "+12%",
-    },
-    {
-      label: "Video mới",
-      value: 52,
-      comparison: "+8%",
-    },
-    {
-      label: "Lượt xem",
-      value: "12,430",
-      comparison: "-3%",
-    },
-    {
-      label: "Bình luận",
-      value: 830,
-      comparison: "+20%",
-    },
+export default function DashboardSummary({ rangeType }: Props) {
+  const [metrics, setMetrics] = useState<null | ApiResponse['data']>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const load = async () => {
+      setLoading(true); setError('');
+      try {
+        const res = await api.get<ApiResponse>('/admin/stats', {
+          headers: { token: true },
+          params: { range: rangeType }
+        });
+        if (res.data.success) {
+          setMetrics(res.data.data);
+        } else {
+          setError('Không thể tải Dashboard summary');
+        }
+      } catch (e: any) {
+        setError(e.response?.data?.message || 'Lỗi tải dữ liệu');
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, [rangeType]);
+
+  if (error)   return <div className="text-red-500 text-sm">{error}</div>;
+
+  if (!metrics) return null;
+  const cards = [
+    { label: 'Người dùng mới', value: metrics.users,    change: `${metrics.fluctuation.percentageChange}%` },
+    { label: 'Video mới',      value: metrics.contents, change: `${metrics.fluctuation.percentageChange}%` },
+    { label: 'Lượt xem',       value: metrics.views,    change: `${metrics.fluctuation.percentageChange}%` },
+    { label: 'Bình luận',      value: metrics.comments, change: `${metrics.fluctuation.percentageChange}%` },
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-      {mockData.map((item, index) => (
-        <div
-          key={index}
-          className="bg-white shadow rounded-lg p-4 flex flex-col gap-1"
-        >
-          <p className="text-sm text-gray-500">
-            {item.label} ({dateRange.label})
-          </p>
-          <h2 className="text-2xl font-bold text-gray-800">{item.value}</h2>
-          <p
-            className={`text-xs ${
-              typeof item.comparison === "string" &&
-              item.comparison.startsWith("-")
-                ? "text-red-500"
-                : "text-green-500"
-            }`}
-          >
-            So với trước: {item.comparison}
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {cards.map((c,i) => (
+        <div key={i} className="bg-white shadow rounded-lg p-4">
+          <p className="text-sm text-gray-500">{c.label}</p>
+          <h2 className="text-2xl font-bold text-gray-800">{c.value}</h2>
+          <p className={c.change.startsWith('-') ? 'text-red-500' : 'text-green-500'}>
+            {c.change}
           </p>
         </div>
       ))}

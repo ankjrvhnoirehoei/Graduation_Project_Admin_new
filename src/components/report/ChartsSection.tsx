@@ -1,39 +1,22 @@
-import { eachDayOfInterval, format } from 'date-fns';
 import { UserGrowthChart } from './visual/UserGrowthChart';
 import { ContentRadarChart } from './visual/ContentRadarChart';
 import { InteractionAreaChart } from './visual/InteractionAreaChart';
 import { CardContent } from '../ui/card';
+import { RangeType } from '../../components/report/type';
 
 interface Props {
-  dateRange: { start: Date; end: Date; label: string };
-  filters: { platform: string; category: string; uploader: string };
+  rangeType: RangeType;
 }
 
-export default function ChartsSection({ dateRange }: Props) {
-  const { start, end, label } = dateRange;
+// Map RangeType to label
+const rangeTypeLabel: Record<RangeType, string> = {
+  '7days': '7 ngày trước',
+  '30days': '30 ngày trước',
+  'year': 'Năm nay',
+};
 
-  // build list of days between start/end
-  const days = eachDayOfInterval({ start, end });
-  const formatted = days.map((d) => format(d, 'dd/MM'));
-
-  // mock numeric generator
-  const rand = (min: number, max: number) =>
-    Math.floor(Math.random() * (max - min + 1)) + min;
-
-  // mock data arrays
-  const usersData = formatted.map((date) => ({ date, users: rand(50, 300) }));
-  const contentData = formatted.map((date) => ({
-    date,
-    posts: rand(10, 80),
-    reels: rand(5, 60),
-    stories: rand(8, 70),
-  }));
-  const interactionsData = formatted.map((date) => ({
-    date,
-    likes: rand(200, 1000),
-    comments: rand(20, 200),
-    follows: rand(5, 100),
-  }));
+export default function ChartsSection({ rangeType }: Props) {
+  const label = rangeTypeLabel[rangeType];
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -41,25 +24,21 @@ export default function ChartsSection({ dateRange }: Props) {
         <h3 className="text-sm font-semibold text-gray-700 mb-2">
           Biểu đồ tăng trưởng người dùng ({label})
         </h3>
-        <CardContent className='h-[400px]'> <UserGrowthChart start={start} end={end} data={usersData} /> </CardContent>
+        <CardContent className='h-[400px]'> <UserGrowthChart rangeType={rangeType} /> </CardContent>
       </div>
 
       <div className="bg-white p-4 rounded-lg shadow h-[444px]">
         <h3 className="text-sm font-semibold text-gray-700 mb-2">
           Biểu đồ hoạt động video ({label})
         </h3>
-        <CardContent className='h-[400px]'> <ContentRadarChart start={start} end={end} data={contentData} /> </CardContent>
+        <CardContent className='h-[400px]'> <ContentRadarChart rangeType={rangeType} /> </CardContent>
       </div>
 
       <div className="bg-white p-4 rounded-lg shadow h-[444px]">
         <h3 className="text-sm font-semibold text-gray-700 mb-2">
           Biểu đồ tương tác ({label})
         </h3>
-        <CardContent className='h-[400px]'> <InteractionAreaChart 
-          start={start}
-          end={end}
-          data={interactionsData}
-        /></CardContent>
+        <CardContent className='h-[400px]'> <InteractionAreaChart rangeType={rangeType} /></CardContent>
       </div>
     </div>
   );

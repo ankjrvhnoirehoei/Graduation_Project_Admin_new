@@ -5,7 +5,6 @@ import {
   Video,
   Eye,
   MessageCircle,
-  DollarSign,
 } from "lucide-react";
 import {
   Card,
@@ -22,11 +21,58 @@ import {
 import { Button } from "../components/ui/button";
 import { UserGrowthChart } from "../components/report/visual/UserGrowthChart";
 import { ContentRadarChart } from "../components/report/visual/ContentRadarChart";
-import { InteractionAreaChart } from "../components/report/visual/InteractionAreaChart"; 
+import { InteractionAreaChart } from "../components/report/visual/InteractionAreaChart";
 import { UsersTable } from "../components/report/visual/UsersTable";
 import { ContentTable } from "../components/report/visual/ContentTable";
+import { useState, useEffect } from "react";
+import api from "../lib/axios";
+
+interface StatsData {
+  users: number;
+  contents: number;
+  views: number;
+  comments: number;
+  fluctuation: {
+    percentageChange: number;
+    trend: string;
+  };
+}
 
 export default function Report() {
+  const [stats, setStats] = useState<StatsData | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>("");
+
+  useEffect(() => {
+    const loadStats = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const res = await api.get('/admin/stats?range=year', { headers: { token: true } });
+        if (res.data.success) {
+          setStats(res.data.data);
+        } else {
+          setError('Không thể tải thống kê');
+        }
+      } catch (err: any) {
+        setError(err.response?.data?.message || 'Lỗi khi tải thống kê');
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadStats();
+  }, []);
+
+  const summaryItems = stats
+    ? [
+        { icon: Users, label: 'Người dùng mới', value: stats.users.toLocaleString() },
+        { icon: Video, label: 'Video mới', value: stats.contents.toLocaleString() },
+        { icon: Eye, label: 'Lượt xem', value: stats.views.toLocaleString() },
+        { icon: MessageCircle, label: 'Bình luận', value: stats.comments.toLocaleString() },
+        { icon: LineChart, label: 'Tăng trưởng', value: `${stats.fluctuation.percentageChange}%` },
+      ]
+    : [];
+
   return (
     <div className="max-w-[1440px] mx-auto p-6 space-y-8">
       {/* Header */}
@@ -41,28 +87,37 @@ export default function Report() {
       </div>
 
       {/* Summary Section */}
+      {error && <p className="text-red-500 text-sm">{error}</p>}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-        {[
-          { icon: Users, label: "Người dùng mới", value: "1,230" },
-          { icon: Video, label: "Video mới", value: "528" },
-          { icon: Eye, label: "Lượt xem", value: "89.2K" },
-          { icon: MessageCircle, label: "Bình luận", value: "3,102" },
-          { icon: LineChart, label: "Tăng trưởng", value: "+12%" },
-        ].map((item, idx) => (
-          <Card key={idx}>
-            <CardContent className="flex items-center gap-4 p-4">
-              <div className="p-2 rounded-full bg-blue-100 text-blue-600">
-                <item.icon className="w-5 h-5" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-500 truncate whitespace-nowrap overflow-hidden">
-                  {item.label}
-                </p>
-                <p className="text-lg font-bold text-gray-800">{item.value}</p>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+        {loading
+          ? Array(5)
+              .fill(null)
+              .map((_, idx) => (
+                <Card key={idx}>
+                  <CardContent className="flex items-center gap-4 p-4 opacity-50 animate-pulse">
+                    <div className="w-6 h-6 bg-gray-200 rounded-full" />
+                    <div>
+                      <p className="h-4 w-20 bg-gray-200 mb-2 rounded" />
+                      <p className="h-6 w-10 bg-gray-200 rounded" />
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+          : summaryItems.map((item, idx) => (
+              <Card key={idx}>
+                <CardContent className="flex items-center gap-4 p-4">
+                  <div className="p-2 rounded-full bg-blue-100 text-blue-600">
+                    <item.icon className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500 truncate whitespace-nowrap overflow-hidden">
+                      {item.label}
+                    </p>
+                    <p className="text-lg font-bold text-gray-800">{item.value}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
       </div>
 
       {/* Charts Section */}
@@ -74,7 +129,9 @@ export default function Report() {
               Tăng trưởng người dùng
             </CardTitle>
           </CardHeader>
-          <CardContent className="h-[400px]"> <UserGrowthChart data={[]} /> </CardContent>
+          <CardContent className="h-[400px]">
+            <UserGrowthChart />
+          </CardContent>
         </Card>
 
         <Card className="h-[444px]">
@@ -84,7 +141,9 @@ export default function Report() {
               Hoạt động bài viết (posts, reels và stories)
             </CardTitle>
           </CardHeader>
-          <CardContent className="h-[400px]"> <ContentRadarChart data={[]} /></CardContent>
+          <CardContent className="h-[400px]">
+            <ContentRadarChart />
+          </CardContent>
         </Card>
 
         <Card className="h-[444px]">
@@ -94,7 +153,9 @@ export default function Report() {
               Tương tác, Bình luận và Theo dõi
             </CardTitle>
           </CardHeader>
-          <CardContent className="h-[400px]"> <InteractionAreaChart data={[]} /></CardContent>
+          <CardContent className="h-[400px]">
+            <InteractionAreaChart />
+          </CardContent>
         </Card>
       </div>
 
@@ -110,7 +171,9 @@ export default function Report() {
             <CardHeader>
               <CardTitle>Danh sách người dùng mới</CardTitle>
             </CardHeader>
-            <CardContent><UsersTable data={[]}/></CardContent>
+            <CardContent>
+              <UsersTable />
+            </CardContent>
           </Card>
         </TabsContent>
 
@@ -119,10 +182,11 @@ export default function Report() {
             <CardHeader>
               <CardTitle>Danh sách bài mới</CardTitle>
             </CardHeader>
-            <CardContent><ContentTable data={[]}/></CardContent>
+            <CardContent>
+              <ContentTable />
+            </CardContent>
           </Card>
         </TabsContent>
-
       </Tabs>
     </div>
   );

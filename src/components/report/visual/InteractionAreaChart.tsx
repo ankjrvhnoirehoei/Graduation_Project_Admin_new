@@ -1,53 +1,71 @@
+import React, { useState, useEffect } from 'react';
 import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
-import { differenceInDays, eachDayOfInterval, eachMonthOfInterval, format, subDays, subMonths } from 'date-fns';
+import api from '../../../lib/axios';
+import { RangeType } from '../../../components/report/type';
 
-type RangeType = 'year' | '30days' | '7days';
-
-interface InteractionAreaProps {
-  rangeType?: RangeType;
-  start?: Date;
-  end?: Date;
-  data: { date: string; likes: number; comments: number; follows: number; }[]
+interface Point {
+  period: string;
+  likes: number;
+  comments: number;
+  follows: number;
+}
+interface ApiResponse {
+  success: boolean;
+  range: RangeType;
+  unit: string;
+  from: string;
+  to: string;
+  data: Point[];
 }
 
-export function InteractionAreaChart({ rangeType = 'year', start, end }: InteractionAreaProps) {
-  const today = new Date();
-  const from = start ?? (rangeType === '7days' ? subDays(today, 6) : rangeType === '30days' ? subDays(today, 29) : subMonths(today, 11));
-  const to = end ?? today;
-  const spanDays = differenceInDays(to, from);
-  const useMonths = spanDays > 60;
-  const labels = useMonths
-    ? eachMonthOfInterval({ start: from, end: to }).map((d) => format(d, 'MMM'))
-    : eachDayOfInterval({ start: from, end: to }).map((d) => format(d, 'dd/MM'));
+interface Props {
+  rangeType?: RangeType;
+}
 
-  const rand = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
-  const chartData = labels.map((label) => ({
-    period: label,
-    likes: rand(200, 1000),
-    comments: rand(20, 200),
-    follows: rand(5, 100),
-  }));
+export function InteractionAreaChart({ rangeType = 'year' }: Props) {
+  const [chartData, setChartData] = useState<Point[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const fetch = async () => {
+      setLoading(true);
+      setError('');
+      try {
+        const res = await api.get<ApiResponse>('/admin/engagement', {
+          headers: { token: true },
+          params: { range: rangeType }
+        });
+        if (res.data.success) {
+          setChartData(res.data.data);
+        } else {
+          setError('Không thể tải dữ liệu tương tác');
+        }
+      } catch (e: any) {
+        setError(e.response?.data?.message || 'Lỗi khi tải dữ liệu tương tác');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetch();
+  }, [rangeType]);
+
+  if (loading) return <div className="flex h-full items-center justify-center">Đang tải...</div>;
+  if (error)   return <div className="text-red-500 text-sm">{error}</div>;
 
   return (
     <ResponsiveContainer width="100%" height="100%">
-      <LineChart data={chartData} margin={{ top: 10, right: 20, bottom: 10, left: 0 }}>
+      <LineChart data={chartData} margin={{ top:10, right:20, bottom:10, left:0 }}>
         <CartesianGrid stroke="#E5E7EB" strokeDasharray="3 3" vertical={false} />
-        <XAxis dataKey="period" axisLine={false} tickLine={false} tick={{ fontSize: 12 }} />
-        <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12 }} />
+        <XAxis dataKey="period" axisLine={false} tickLine={false} tick={{ fontSize:12 }} />
+        <YAxis axisLine={false} tickLine={false} tick={{ fontSize:12 }} />
         <Tooltip />
-        <Legend wrapperStyle={{ fontSize: 12 }} />
-        <Line type="monotone" dataKey="likes" stroke="#3B82F6" strokeWidth={2} dot={{ r: 3 }} />
-        <Line type="monotone" dataKey="comments" stroke="#EC4899" strokeWidth={2} dot={{ r: 3 }} />
-        <Line type="monotone" dataKey="follows" stroke="#10B981" strokeWidth={2} dot={{ r: 3 }} />
+        <Legend wrapperStyle={{ fontSize:12 }} />
+        <Line type="monotone" dataKey="likes"    stroke="#3B82F6" strokeWidth={2} dot={{ r:3 }} />
+        <Line type="monotone" dataKey="comments" stroke="#EC4899" strokeWidth={2} dot={{ r:3 }} />
+        <Line type="monotone" dataKey="follows"  stroke="#10B981" strokeWidth={2} dot={{ r:3 }} />
       </LineChart>
     </ResponsiveContainer>
   );
