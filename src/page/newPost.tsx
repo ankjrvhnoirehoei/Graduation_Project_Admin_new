@@ -464,6 +464,7 @@ export default function NewPostsToday() {
         headers: { token: true }
       });
       if (res.data.success) {
+        alert("Cập nhật bài viết thành công.")
         setPosts(ps => ps.map(x =>
           x._id === post._id ? { ...x, isEnabled: res.data.isEnabled } : x
         ));
@@ -537,7 +538,6 @@ export default function NewPostsToday() {
               <TableHead>Phương tiện</TableHead>
               <TableHead>Chú thích</TableHead>
               <TableHead>Người đăng</TableHead>
-              <TableHead>Trạng thái</TableHead>
               <TableHead className="text-right">Hành động</TableHead>
             </TableRow>
           </TableHeader>
@@ -556,13 +556,6 @@ export default function NewPostsToday() {
                     </TableCell>
                     <TableCell className="max-w-[200px] truncate">{p.caption}</TableCell>
                     <TableCell>{p.author || '(Ẩn danh)'}</TableCell>
-                    <TableCell>
-                      <span className={`px-2 py-1 rounded-full text-xs ${
-                        p.isEnabled ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                      }`}>
-                        {p.isEnabled ? 'Enabled' : 'Deleted'}
-                      </span>
-                    </TableCell>
                     <TableCell className="text-right space-x-1">
                       <Button 
                         size="icon" 
