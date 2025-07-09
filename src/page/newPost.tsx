@@ -432,7 +432,6 @@ export default function NewPostsToday() {
     })();
   }, []);
 
-  // Enhanced video detection including M3U8 and HLS
   const isVideoFile = (url: string) => {
     if (!url) return false;
     return isVideo(url) || isHls(url);
