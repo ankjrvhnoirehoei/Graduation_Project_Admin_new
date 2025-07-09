@@ -174,7 +174,7 @@ export default function DashboardUserDetail() {
               <p className="text-xs text-gray-600 italic">
                 {userData.address || "Địa chỉ không rõ"}
               </p>
-              {userData.isVip ? (
+              {/* {userData.isVip ? (
                 <Badge
                   variant="default"
                   className="bg-yellow-400 text-white mt-2"
@@ -185,7 +185,7 @@ export default function DashboardUserDetail() {
                 <Badge variant="outline" className="mt-2">
                   Thường
                 </Badge>
-              )}
+              )} */}
             </div>
           </div>
 

@@ -169,14 +169,14 @@ function EnhancedUserModal({ user, onClose }: { user: any; onClose: () => void }
           </div>
 
           {/* VIP Status Badge */}
-          {user.isVip && (
+          {/* {user.isVip && (
             <div className="mt-6 flex justify-center">
               <div className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-white px-4 py-2 rounded-full flex items-center gap-2 shadow-lg">
                 <Crown className="w-4 h-4" />
                 <span className="font-medium">Tài khoản VIP</span>
               </div>
             </div>
-          )}
+          )} */}
 
           {/* Deleted Status */}
           {user.deletedAt && (
@@ -228,7 +228,7 @@ export default function NewUsersToday() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  const [filter, setFilter] = useState<'all'|'vip'|'deleted'>('all');
+  const [filter, setFilter] = useState<'all'|'deleted'>('all');
 
   const [detailUser, setDetailUser] = useState<User| null>(null);
 
@@ -258,7 +258,7 @@ export default function NewUsersToday() {
   // local filters
   const filtered = users.filter(u => {
     if (searchTerm && !u.handleName.toLowerCase().includes(searchTerm.toLowerCase())) return false;
-    if (filter === 'vip' && !u.isVip) return false;
+    // if (filter === 'vip' && !u.isVip) return false;
     if (filter === 'deleted' && !u.deletedAt) return false;
     return true;
   });
@@ -308,7 +308,7 @@ export default function NewUsersToday() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Tất cả</SelectItem>
-            <SelectItem value="vip">VIP</SelectItem>
+            {/* <SelectItem value="vip">VIP</SelectItem> */}
             <SelectItem value="deleted">Đã xóa</SelectItem>
           </SelectContent>
         </Select>
@@ -322,7 +322,7 @@ export default function NewUsersToday() {
               <TableHead>Username/Handle</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Joined</TableHead>
-              <TableHead>VIP</TableHead>
+              {/* <TableHead>VIP</TableHead> */}
               <TableHead>Deleted</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
@@ -344,7 +344,7 @@ export default function NewUsersToday() {
                     </TableCell>
                     <TableCell>{u.email}</TableCell>
                     <TableCell>{new Date(u.createdAt).toLocaleString()}</TableCell>
-                    <TableCell>{u.isVip ? '✔' : '–'}</TableCell>
+                    {/* <TableCell>{u.isVip ? '✔' : '–'}</TableCell> */}
                     <TableCell>{u.deletedAt ? '✔' : '–'}</TableCell>
                     <TableCell className="text-right space-x-1">
                       {/* Eye: show details */}

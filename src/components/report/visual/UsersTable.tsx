@@ -89,7 +89,7 @@ export function UsersTable() {
             <th className="px-4 py-2 text-left text-sm font-medium text-gray-600">Ảnh đại diện</th>
             <th className="px-4 py-2 text-left text-sm font-medium text-gray-600">Username</th>
             <th className="px-4 py-2 text-left text-sm font-medium text-gray-600">Handle</th>
-            <th className="px-4 py-2 text-left text-sm font-medium text-gray-600">VIP</th>
+            {/* <th className="px-4 py-2 text-left text-sm font-medium text-gray-600">VIP</th> */}
             <th className="px-4 py-2 text-left text-sm font-medium text-gray-600">Bị xóa</th>
             <th className="px-4 py-2 text-left text-sm font-medium text-gray-600">Ngày tạo account</th>
             <th className="px-4 py-2 text-left text-sm font-medium text-gray-600">Ngày sinh</th>
@@ -118,11 +118,11 @@ export function UsersTable() {
                   </td>
                   <td className="px-4 py-3 text-sm text-gray-700">{u.username}</td>
                   <td className="px-4 py-3 text-sm text-gray-700">{u.handleName}</td>
-                  <td className="px-4 py-3">
+                  {/* <td className="px-4 py-3">
                     <span className={`px-2 py-1 text-xs font-medium rounded-full ${u.isVip ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}`}>
                       {u.isVip ? 'VIP' : 'User'}
                     </span>
-                  </td>
+                  </td> */}
                   <td className="px-4 py-3">
                     <span className={`px-2 py-1 text-xs font-medium rounded-full ${u.deletedAt ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'}`}>
                       {u.deletedAt ? 'Yes' : 'No'}
