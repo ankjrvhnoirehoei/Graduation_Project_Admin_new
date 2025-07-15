@@ -1,5 +1,6 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Hls from "hls.js";
+import { Play } from "lucide-react";
 
 interface Props {
   src: string;
@@ -8,6 +9,7 @@ interface Props {
 
 export default function VideoPreview({ src, className }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   useEffect(() => {
     if (videoRef.current) {
@@ -24,14 +26,35 @@ export default function VideoPreview({ src, className }: Props) {
     }
   }, [src]);
 
+  const handleVideoPress = () => {
+    if (videoRef.current) {
+      if (isPlaying) {
+        videoRef.current.pause();
+        setIsPlaying(false);
+      } else {
+        videoRef.current.play();
+        setIsPlaying(true);
+      }
+    }
+  };
+
   return (
-    <video
-      ref={videoRef}
-      className={className}
-      muted
-      autoPlay
-      loop
-      playsInline
-    />
+    <div className="relative inline-block cursor-pointer" onClick={handleVideoPress}>
+      <video
+        ref={videoRef}
+        className={className}
+        muted
+        playsInline
+        onPlay={() => setIsPlaying(true)}
+        onPause={() => setIsPlaying(false)}
+      />
+      {!isPlaying && (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="w-12 h-12 bg-black bg-opacity-60 rounded-full flex items-center justify-center">
+            <Play size={20} className="text-white ml-1" />
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
