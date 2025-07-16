@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Dialog, DialogContent } from "../components/ui/dialog";
 import { Button } from "../components/ui/button";
+import { Play } from "lucide-react";
 import Hls from "hls.js";
 
 interface TopVideo {
@@ -21,6 +22,7 @@ interface Props {
 export default function PostPreviewModal({ post, onClose }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [videoError, setVideoError] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   useEffect(() => {
     if (!post || !post.thumbnail) return;
@@ -68,6 +70,18 @@ export default function PostPreviewModal({ post, onClose }: Props) {
 
   const totalViews = post.likes + post.comments + post.shares;
 
+  const handleVideoPress = () => {
+    if (videoRef.current) {
+      if (isPlaying) {
+        videoRef.current.pause();
+        setIsPlaying(false);
+      } else {
+        videoRef.current.play();
+        setIsPlaying(true);
+      }
+    }
+  };
+
   return (
     <Dialog open={!!post} onOpenChange={onClose}>
       <DialogContent className="max-w-[85vw] w-[85vw] h-[85vh] p-0 overflow-hidden bg-transparent border-none shadow-none">
@@ -83,24 +97,47 @@ export default function PostPreviewModal({ post, onClose }: Props) {
                 />
               ) : post.thumbnail.endsWith(".m3u8") ? (
                 !videoError ? (
-                  <video
-                    ref={videoRef}
-                    autoPlay
-                    controls
-                    className="object-contain h-auto max-h-[75vh] w-auto rounded-lg shadow-md"
-                  />
+                  <div className="relative cursor-pointer" onClick={handleVideoPress}>
+                    <video
+                      ref={videoRef}
+                      muted
+                      playsInline
+                      className="object-contain h-auto max-h-[75vh] w-auto rounded-lg shadow-md"
+                      onPlay={() => setIsPlaying(true)}
+                      onPause={() => setIsPlaying(false)}
+                    />
+                    {!isPlaying && (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-16 h-16 bg-black bg-opacity-60 rounded-full flex items-center justify-center">
+                          <Play size={24} className="text-white ml-1" />
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 ) : (
                   <div className="text-center text-gray-500 text-sm">
                     Không thể phát video HLS (.m3u8)
                   </div>
                 )
               ) : (
-                <video
-                  src={post.thumbnail}
-                  controls
-                  className="object-contain h-auto max-h-[75vh] w-auto rounded-lg shadow-md"
-                  onError={() => setVideoError(true)}
-                />
+                <div className="relative cursor-pointer" onClick={handleVideoPress}>
+                  <video
+                    src={post.thumbnail}
+                    muted
+                    playsInline
+                    className="object-contain h-auto max-h-[75vh] w-auto rounded-lg shadow-md"
+                    onError={() => setVideoError(true)}
+                    onPlay={() => setIsPlaying(true)}
+                    onPause={() => setIsPlaying(false)}
+                  />
+                  {!isPlaying && (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="w-16 h-16 bg-black bg-opacity-60 rounded-full flex items-center justify-center">
+                        <Play size={24} className="text-white ml-1" />
+                      </div>
+                    </div>
+                  )}
+                </div>
               )}
             </div>
           </div>
