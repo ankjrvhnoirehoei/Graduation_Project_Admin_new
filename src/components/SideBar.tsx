@@ -5,6 +5,7 @@ import {
   FiSettings,
   FiUser,
 } from "react-icons/fi";
+import { IoStatsChartOutline } from "react-icons/io5";
 import { Link, useLocation } from "react-router-dom";
 import clsx from "clsx";
 import { Clapperboard } from "lucide-react";
@@ -13,7 +14,8 @@ const navItems = [
   { name: "Dashboard", path: "/", icon: <FiHome size={18} /> },
   { name: "User", path: "/users", icon: <FiUser size={18} /> },
   { name: "Post", path: "/video", icon: <Clapperboard size={18} /> },
-  { name: "Report", path: "/reports", icon: <FiFileText size={18} /> },
+  { name: "General", path: "/reports", icon: <IoStatsChartOutline size={18} />  },
+  { name: "Report", path: "/issues", icon: <FiFileText size={18} />},
   { name: "Settings", path: "/settings", icon: <FiSettings size={18} /> },
 ];
 

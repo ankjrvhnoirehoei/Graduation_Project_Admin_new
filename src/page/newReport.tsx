@@ -16,11 +16,6 @@ import { RangeType, TableType } from '../components/report/type';
 export default function NewReportToday() {
   const [rangeType, setRangeType] = useState<RangeType>('7days');
 
-  // const tableTabs: { label: string; value: TableType }[] = [
-  //   { label: 'Người dùng mới', value: 'users' },
-  //   { label: 'Video mới',      value: 'videos' },
-  // ];
-
   return (
     <div className="max-w-[1440px] mx-auto p-6 space-y-6">
       {/* Header & Filters */}
@@ -34,26 +29,7 @@ export default function NewReportToday() {
 
       {/* Charts & Trends */}
       <ChartsSection rangeType={rangeType} />
-
-      {/* Detailed Data Tables
-      <Tabs defaultValue="users" className="mt-8">
-        <TabsList className="mb-4">
-          {tableTabs.map(tab => (
-            <TabsTrigger key={tab.value} value={tab.value}>
-              {tab.label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-        {tableTabs.map(tab => (
-          <TabsContent key={tab.value} value={tab.value}>
-            <Card>
-              <CardContent className="p-0">
-                <DetailedTables type={tab.value} />
-              </CardContent>
-            </Card>
-          </TabsContent>
-        ))}
-      </Tabs> */}
+      
     </div>
   );
 }

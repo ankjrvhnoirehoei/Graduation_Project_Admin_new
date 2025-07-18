@@ -5,6 +5,8 @@ import {
   Video,
   Eye,
   MessageCircle,
+  ChartColumnIncreasing,
+  User,
 } from "lucide-react";
 import {
   Card,
@@ -26,6 +28,8 @@ import { UsersTable } from "../components/report/visual/UsersTable";
 import { ContentTable } from "../components/report/visual/ContentTable";
 import { useState, useEffect } from "react";
 import api from "../lib/axios";
+import { ReportsReasonsChart } from "../components/report/visual/ReportsReasonsChart";
+import { ReportedUsersChart } from "../components/report/visual/ReportedUsersChart";
 
 interface StatsData {
   users: number;
@@ -122,19 +126,8 @@ export default function Report() {
 
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="h-[444px]">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BarChart2 className="w-5 h-5" />
-              Tăng trưởng người dùng
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="h-[400px]">
-            <UserGrowthChart />
-          </CardContent>
-        </Card>
 
-        <Card className="h-[444px]">
+        <Card className="h-[490px] pt-1">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Video className="w-5 h-5" />
@@ -146,7 +139,19 @@ export default function Report() {
           </CardContent>
         </Card>
 
-        <Card className="h-[444px]">
+        <Card className="h-[490px] pt-1">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <ChartColumnIncreasing className="w-5 h-5" />
+              Lý do người dùng/bài viết bị báo cáo
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="h-[400px]">
+            <ReportsReasonsChart />
+          </CardContent>
+        </Card>
+
+        <Card className="h-[490px] pt-1">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <MessageCircle className="w-5 h-5" />
@@ -157,6 +162,30 @@ export default function Report() {
             <InteractionAreaChart />
           </CardContent>
         </Card>
+
+        <Card className="h-[490px] pt-1">
+          <CardHeader className="">
+            <CardTitle className="flex items-center gap-2">
+              <User className="w-5 h-5" />
+              Người dùng bị báo cáo nhiều lần 
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="h-[400px]">
+            <ReportedUsersChart />
+          </CardContent>
+        </Card>
+
+        <Card className="h-[490px] pt-1">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart2 className="w-5 h-5" />
+              Tăng trưởng người dùng
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="h-[400px]">
+            <UserGrowthChart />
+          </CardContent>
+        </Card>        
       </div>
 
       {/* Tabs Section */}

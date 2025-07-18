@@ -17,6 +17,7 @@ import Report from "./page/report";
 import NewUsersToday from "./page/newUser";
 import NewPostsToday from "./page/newPost";
 import NewReportToday from "./page/newReport";
+import Issues from "./page/issues";
 
 function ProtectedLayout() {
   const location = useLocation();
@@ -66,6 +67,7 @@ function ProtectedLayout() {
           <Route path="/video" element={<Video />} />
           <Route path="/reports" element={<Report />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/issues" element={<Issues />} />
           <Route path="/documents" element={<Document />} />
         </Routes>
       </main>
