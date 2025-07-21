@@ -4,6 +4,7 @@ import {
 } from 'recharts';
 import api from '../../../lib/axios';
 import { RangeType } from '../../../components/report/type';
+import { reasonMap } from '../../../utils/reasons';
 
 interface ReportedUserPoint {
   period: string;
@@ -71,6 +72,28 @@ const CustomLegend = ({ users }: { users: string[] }) => {
       )}
     </div>
   );
+};
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    // Filter out entries with value 0
+    const nonZeroPayload = payload.filter((entry: any) => entry.value > 0);
+    
+    if (nonZeroPayload.length === 0) {
+      return null;
+    }
+
+    return (
+      <div className="bg-white p-3 border border-gray-200 rounded shadow-lg">
+        <p className="font-semibold mb-2">{label}</p>
+        {nonZeroPayload.map((entry: any, index: number) => (
+          <p key={index} style={{ color: entry.color }} className="text-sm">
+            {reasonMap[entry.dataKey] || entry.dataKey}: {entry.value}
+          </p>
+        ))}
+      </div>
+    );
+  }
+  return null;
 };
 
 export function ReportedUsersChart({ rangeType = 'year' }: Props) {
@@ -160,6 +183,7 @@ export function ReportedUsersChart({ rangeType = 'year' }: Props) {
           <CartesianGrid stroke="#E5E7EB" strokeDasharray="3 3" vertical={false} />
           <XAxis dataKey="period" axisLine={false} tickLine={false} tick={{ fontSize: 12 }} />
           <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12 }} />
+          <Tooltip content={<CustomTooltip />} />
           {activeUsers.map((username, index) => (
             <Line
               key={username}

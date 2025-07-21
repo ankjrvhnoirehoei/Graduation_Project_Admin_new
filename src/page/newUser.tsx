@@ -290,9 +290,6 @@ export default function NewUsersToday() {
             Hiển thị {filtered.length} / {users.length} kết quả
           </p>
         </div>
-        <Button variant="outline" className="flex items-center gap-2">
-          <Download className="w-4 h-4" /> Export Excel
-        </Button>
       </div>
 
       <div className="flex flex-wrap gap-4">

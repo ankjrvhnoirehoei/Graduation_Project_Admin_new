@@ -5,7 +5,7 @@ import { Button } from "../components/ui/button";
 interface TopVideo {
   id: string;
   caption: string;
-  thumbnail: string;       // renamed from `thumbnail`
+  thumbnail: string; 
   author: string;
   likes: number;
   comments: number;
@@ -161,13 +161,13 @@ console.log(`Video track dimensions: ${v?.videoWidth}×${v?.videoHeight}`);
               </div>
 
               {/* Debug info */}
-              <div className="text-xs text-gray-400 border-t pt-4">
+              {/* <div className="text-xs text-gray-400 border-t pt-4">
                 <p>Video URL: {post.thumbnail}</p>
                 <p>Is Video: {isVideo ? 'Yes' : 'No'}</p>
                 <p>Loading: {isLoading ? 'Yes' : 'No'}</p>
                 <p>Error: {videoError ? 'Yes' : 'No'}</p>
                 <p>Codec Supported: {codecSupported ? 'Yes' : 'No'}</p>
-              </div>
+              </div> */}
             </div>
 
             <div className="text-right pt-6">

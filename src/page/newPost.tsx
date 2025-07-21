@@ -496,9 +496,6 @@ export default function NewPostsToday() {
             Hiển thị {filtered.length} / {posts.length}
           </p>
         </div>
-        <Button variant="outline" className="flex items-center gap-2">
-          <Download className="w-4 h-4"/> Xuất Excel
-        </Button>
       </div>
 
       {/* Controls */}
