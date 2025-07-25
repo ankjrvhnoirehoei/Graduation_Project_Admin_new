@@ -7,7 +7,6 @@ export interface UserRow {
   username: string;
   handleName: string;
   profilePic?: string;
-  isVip: boolean;
   deletedAt: boolean;
   createdAt: string;
   dateOfBirth?: string;
@@ -21,7 +20,6 @@ interface ApiResponse {
       username: string;
       handleName: string;
       profilePic?: string;
-      isVip: boolean;
       deletedAt: boolean;
       createdAt: string;
       dateOfBirth?: string;
@@ -60,7 +58,6 @@ export function UsersTable() {
             username: u.username,
             handleName: u.handleName,
             profilePic: u.profilePic,
-            isVip: u.isVip,
             deletedAt: u.deletedAt,
             createdAt: new Date(u.createdAt).toLocaleString(),
             dateOfBirth: u.dateOfBirth || '',
@@ -118,11 +115,6 @@ export function UsersTable() {
                   </td>
                   <td className="px-4 py-3 text-sm text-gray-700">{u.username}</td>
                   <td className="px-4 py-3 text-sm text-gray-700">{u.handleName}</td>
-                  {/* <td className="px-4 py-3">
-                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${u.isVip ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}`}>
-                      {u.isVip ? 'VIP' : 'User'}
-                    </span>
-                  </td> */}
                   <td className="px-4 py-3">
                     <span className={`px-2 py-1 text-xs font-medium rounded-full ${u.deletedAt ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'}`}>
                       {u.deletedAt ? 'Yes' : 'No'}

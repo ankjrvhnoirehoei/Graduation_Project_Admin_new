@@ -19,7 +19,6 @@ type UserInfo = {
   handleName: string;
   address?: string;
   profilePic?: string;
-  isVip?: boolean;
   interactionChartData: {
     week: string;
     post: number;
@@ -174,18 +173,6 @@ export default function DashboardUserDetail() {
               <p className="text-xs text-gray-600 italic">
                 {userData.address || "Địa chỉ không rõ"}
               </p>
-              {/* {userData.isVip ? (
-                <Badge
-                  variant="default"
-                  className="bg-yellow-400 text-white mt-2"
-                >
-                  VIP
-                </Badge>
-              ) : (
-                <Badge variant="outline" className="mt-2">
-                  Thường
-                </Badge>
-              )} */}
             </div>
           </div>
 

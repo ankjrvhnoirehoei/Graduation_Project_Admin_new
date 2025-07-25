@@ -70,7 +70,7 @@ export default function Report() {
   const summaryItems = stats
     ? [
         { icon: Users, label: 'Người dùng mới', value: stats.users.toLocaleString() },
-        { icon: Video, label: 'Video mới', value: stats.contents.toLocaleString() },
+        { icon: Video, label: 'Bài viết mới', value: stats.contents.toLocaleString() },
         { icon: Eye, label: 'Lượt xem', value: stats.views.toLocaleString() },
         { icon: MessageCircle, label: 'Bình luận', value: stats.comments.toLocaleString() },
         { icon: LineChart, label: 'Tăng trưởng', value: `${stats.fluctuation.percentageChange}%` },

@@ -71,7 +71,7 @@ export default function VideoAreaChart() {
   return (
     <Card className="overflow-hidden">
       <CardHeader className="pb-2">
-        <CardTitle className="text-base">Thống kê video theo tháng</CardTitle>
+        <CardTitle className="text-base">Thống kê bài viết và stories theo tháng</CardTitle>
         <CardDescription className="text-xs">
           Tổng số Posts & Stories trong 12 tháng qua
         </CardDescription>
