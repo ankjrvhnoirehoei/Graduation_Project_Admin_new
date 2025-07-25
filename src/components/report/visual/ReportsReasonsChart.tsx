@@ -118,8 +118,8 @@ export function ReportsReasonsChart({ rangeType = 'year' }: Props) {
       setLoading(true);
       setError('');
       try {
-        // Fetch data from both endpoints
-        const [contentRes, userRes] = await Promise.all([
+        // Fetch data from all three endpoints
+        const [contentRes, userRes, storyRes] = await Promise.all([
           api.get<ApiResponse>('/admin/reports/content/reasons', {
             headers: { token: true },
             params: { range: rangeType }
@@ -127,12 +127,16 @@ export function ReportsReasonsChart({ rangeType = 'year' }: Props) {
           api.get<ApiResponse>('/admin/reports/user/reasons', {
             headers: { token: true },
             params: { range: rangeType }
+          }),
+          api.get<ApiResponse>('/admin/reports/story/reasons', {
+            headers: { token: true },
+            params: { range: rangeType }
           })
         ]);
 
-        if (contentRes.data.success && userRes.data.success) {
-          // Combine data from both endpoints
-          const combinedData = combineReportData(contentRes.data.data, userRes.data.data);
+        if (contentRes.data.success && userRes.data.success && storyRes.data.success) {
+          // Combine data from all three endpoints
+          const combinedData = combineReportData(contentRes.data.data, userRes.data.data, storyRes.data.data);
           setChartData(combinedData);
         } else {
           setError('Không thể tải dữ liệu báo cáo');
@@ -146,10 +150,11 @@ export function ReportsReasonsChart({ rangeType = 'year' }: Props) {
     fetchData();
   }, [rangeType]);
 
-  // Function to combine data from both endpoints
+  // Function to combine data from all three endpoints
   const combineReportData = (
     contentData: ReportReasonPoint[], 
-    userData: ReportReasonPoint[]
+    userData: ReportReasonPoint[],
+    storyData: ReportReasonPoint[]
   ): ReportReasonPoint[] => {
     const combinedMap = new Map<string, ReportReasonPoint>();
 
@@ -160,6 +165,28 @@ export function ReportsReasonsChart({ rangeType = 'year' }: Props) {
 
     // Add user data to existing periods or create new ones
     userData.forEach(item => {
+      const existing = combinedMap.get(item.period);
+      if (existing) {
+        // Sum all the reason categories
+        combinedMap.set(item.period, {
+          period: item.period,
+          HARASSMENT_AND_BULLYING: existing.HARASSMENT_AND_BULLYING + item.HARASSMENT_AND_BULLYING,
+          HATE_SPEECH: existing.HATE_SPEECH + item.HATE_SPEECH,
+          IMPERSONATION_FAKE_ACCOUNTS: existing.IMPERSONATION_FAKE_ACCOUNTS + item.IMPERSONATION_FAKE_ACCOUNTS,
+          GRAPHIC_CONTENT: existing.GRAPHIC_CONTENT + item.GRAPHIC_CONTENT,
+          THREATS_AND_VIOLENCE: existing.THREATS_AND_VIOLENCE + item.THREATS_AND_VIOLENCE,
+          SCAMS_AND_FRAUD: existing.SCAMS_AND_FRAUD + item.SCAMS_AND_FRAUD,
+          SENSITIVE_PERSONAL_INFO: existing.SENSITIVE_PERSONAL_INFO + item.SENSITIVE_PERSONAL_INFO,
+          SELF_HARM: existing.SELF_HARM + item.SELF_HARM,
+          OTHER: existing.OTHER + item.OTHER
+        });
+      } else {
+        combinedMap.set(item.period, { ...item });
+      }
+    });
+
+    // Add story data to existing periods or create new ones
+    storyData.forEach(item => {
       const existing = combinedMap.get(item.period);
       if (existing) {
         // Sum all the reason categories

@@ -49,6 +49,29 @@ export interface ContentTarget {
   isBookmarked: boolean;
 }
 
+export interface StoryTarget {
+  _id: string;
+  userID: string;
+  caption?: string;
+  isFlagged: boolean;
+  isEnable: boolean;
+  viewCount: number;
+  createdAt: string;
+  updatedAt: string;
+  media: Array<{
+    _id: string;
+    storyID: string;
+    videoUrl?: string;
+    imageUrl?: string;
+    tags: string[];
+  }>;
+  user: {
+    _id: string;
+    handleName: string;
+    profilePic: string;
+  };
+}
+
 export interface UserTarget {
   _id: string;
   username: string;
@@ -68,7 +91,7 @@ export interface Report {
   createdAt: string;
   updatedAt: string;
   reporter: Reporter;
-  target: ContentTarget | UserTarget;
+  target: ContentTarget | UserTarget | StoryTarget;
 }
 
 export interface ReportsResponse {
@@ -80,6 +103,6 @@ export interface ReportsResponse {
   hasPrev: boolean;
 }
 
-export type TableType = "users" | "videos" | "performance";
+export type TableType = "users" | "videos" | "stories" | "performance";
 
 export type RangeType = "7days" | "30days" | "year";

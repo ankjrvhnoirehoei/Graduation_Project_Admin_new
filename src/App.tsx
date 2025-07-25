@@ -10,6 +10,7 @@ import Home from "./page/home";
 import Settings from "./page/settings";
 import Users from "./page/user";
 import Video from "./page/video";
+import Story from "./page/story";
 import Sidebar from "./components/SideBar";
 import Document from "./page/documentation";
 import LoginPage from "./page/login";
@@ -65,6 +66,7 @@ function ProtectedLayout() {
           <Route path="/new-posts" element={<NewPostsToday />} />
           <Route path="/new-reports" element={<NewReportToday />} />
           <Route path="/video" element={<Video />} />
+          <Route path="/story" element={<Story />} />
           <Route path="/reports" element={<Report />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/issues" element={<Issues />} />
