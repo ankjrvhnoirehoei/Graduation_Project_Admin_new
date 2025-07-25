@@ -26,10 +26,12 @@ import { ContentRadarChart } from "../components/report/visual/ContentRadarChart
 import { InteractionAreaChart } from "../components/report/visual/InteractionAreaChart";
 import { UsersTable } from "../components/report/visual/UsersTable";
 import { ContentTable } from "../components/report/visual/ContentTable";
+import { StoriesTable } from "../components/report/visual/StoriesTable";
 import { useState, useEffect } from "react";
 import api from "../lib/axios";
 import { ReportsReasonsChart } from "../components/report/visual/ReportsReasonsChart";
 import { ReportedUsersChart } from "../components/report/visual/ReportedUsersChart";
+import { StoriesReportChart } from "../components/report/visual/StoriesReportChart";
 
 interface StatsData {
   users: number;
@@ -177,6 +179,18 @@ export default function Report() {
         <Card className="h-[490px] pt-1">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
+              <Video className="w-5 h-5" />
+              Báo cáo Stories
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="h-[400px]">
+            <StoriesReportChart />
+          </CardContent>
+        </Card>
+
+        <Card className="h-[490px] pt-1">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
               <BarChart2 className="w-5 h-5" />
               Tăng trưởng người dùng
             </CardTitle>
@@ -192,6 +206,7 @@ export default function Report() {
         <TabsList className="bg-muted p-1 rounded mb-4">
           <TabsTrigger value="users">Người dùng</TabsTrigger>
           <TabsTrigger value="videos">Bài viết</TabsTrigger>
+          <TabsTrigger value="stories">Stories</TabsTrigger>
         </TabsList>
 
         <TabsContent value="users">
@@ -212,6 +227,17 @@ export default function Report() {
             </CardHeader>
             <CardContent>
               <ContentTable />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="stories">
+          <Card>
+            <CardHeader>
+              <CardTitle>Danh sách stories mới</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <StoriesTable />
             </CardContent>
           </Card>
         </TabsContent>
