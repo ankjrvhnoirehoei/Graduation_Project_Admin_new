@@ -1,7 +1,7 @@
 "use client";
 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid } from "recharts";
-import { TrendingUp } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -30,10 +30,29 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
+interface WeeklyData {
+  day: string;
+  previousWeek: number;
+  beforePrevious: number;
+  percentageChange: number;
+  trend: string;
+}
+
 export default function VideoLineComparison() {
   const [chartData, setChartData] = useState<
     { day: string; thisWeek: number; lastWeek: number }[]
   >([]);
+  const [overallStats, setOverallStats] = useState<{
+    totalChange: number;
+    trend: string;
+    thisWeekTotal: number;
+    lastWeekTotal: number;
+  }>({
+    totalChange: 0,
+    trend: "no change",
+    thisWeekTotal: 0,
+    lastWeekTotal: 0,
+  });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -42,9 +61,9 @@ export default function VideoLineComparison() {
           headers: { token: true },
         });
 
-        const rawData = res.data;
+        const rawData: WeeklyData[] = res.data;
 
-        const transformed = rawData.map((item: any) => ({
+        const transformed = rawData.map((item) => ({
           day: item.day,
           thisWeek: item.previousWeek,
           lastWeek: item.beforePrevious,
@@ -52,11 +71,33 @@ export default function VideoLineComparison() {
 
         const order = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
         transformed.sort(
-          (a: { day: string }, b: { day: string }) =>
-            order.indexOf(a.day) - order.indexOf(b.day)
+          (a, b) => order.indexOf(a.day) - order.indexOf(b.day)
         );
 
         setChartData(transformed);
+
+        // Calculate overall statistics
+        const thisWeekTotal = rawData.reduce((sum, item) => sum + item.previousWeek, 0);
+        const lastWeekTotal = rawData.reduce((sum, item) => sum + item.beforePrevious, 0);
+        
+        let overallChange = 0;
+        let overallTrend = "no change";
+        
+        if (lastWeekTotal === 0) {
+          overallChange = thisWeekTotal === 0 ? 0 : 100;
+          overallTrend = thisWeekTotal > 0 ? "increase" : "no change";
+        } else {
+          overallChange = Math.round(((thisWeekTotal - lastWeekTotal) / lastWeekTotal) * 100);
+          overallTrend = overallChange > 0 ? "increase" : overallChange < 0 ? "decrease" : "no change";
+        }
+
+        setOverallStats({
+          totalChange: Math.abs(overallChange),
+          trend: overallTrend,
+          thisWeekTotal,
+          lastWeekTotal,
+        });
+
       } catch (error) {
         console.error("Lỗi khi fetch dữ liệu 2 tuần:", error);
       }
@@ -65,11 +106,43 @@ export default function VideoLineComparison() {
     fetchData();
   }, []);
 
+  const getTrendIcon = () => {
+    switch (overallStats.trend) {
+      case "increase":
+        return <TrendingUp className="h-4 w-4" />;
+      case "decrease":
+        return <TrendingDown className="h-4 w-4" />;
+      default:
+        return <Minus className="h-4 w-4" />;
+    }
+  };
+
+  const getTrendColor = () => {
+    switch (overallStats.trend) {
+      case "increase":
+        return "text-green-600";
+      case "decrease":
+        return "text-red-600";
+      default:
+        return "text-gray-600";
+    }
+  };
+
+  const getTrendText = () => {
+    if (overallStats.trend === "no change") {
+      return "Không có thay đổi";
+    }
+    const action = overallStats.trend === "increase" ? "tăng" : "giảm";
+    return `${action} ${overallStats.totalChange}% so với tuần kia`;
+  };
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>So sánh video 2 tuần gần đây</CardTitle>
-        <CardDescription>Thứ 2 → Chủ Nhật</CardDescription>
+        <CardDescription>
+          Thứ 2 → Chủ Nhật ({overallStats.thisWeekTotal} vs {overallStats.lastWeekTotal} video)
+        </CardDescription>
       </CardHeader>
 
       <CardContent>
@@ -110,8 +183,8 @@ export default function VideoLineComparison() {
       <CardFooter>
         <div className="flex w-full items-start gap-2 text-sm">
           <div className="grid gap-2">
-            <div className="flex items-center gap-2 font-medium text-green-600">
-              Tuần trước tăng 7.4% <TrendingUp className="h-4 w-4" />
+            <div className={`flex items-center gap-2 font-medium ${getTrendColor()}`}>
+              {getTrendText()} {getTrendIcon()}
             </div>
             <div className="text-muted-foreground">
               So sánh tổng số video giữa 2 tuần

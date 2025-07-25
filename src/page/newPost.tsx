@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import Hls from 'hls.js';
 import {
   Table, TableHeader, TableBody, TableRow, TableHead, TableCell
 } from '../components/ui/table';
@@ -9,14 +8,11 @@ import { Button } from '../components/ui/button';
 import {
   Select, SelectTrigger, SelectValue, SelectContent, SelectItem
 } from '../components/ui/select';
-import { Download, Eye, Trash, X, Music, Image, Video, User } from 'lucide-react';
+import { Download, Eye, Trash, X, Music, Image, Video, User, ChevronLeft, ChevronRight } from 'lucide-react';
 import api from '../lib/axios';
 
-// Video detection functions
-const isVideo = (url: string) => /\.(mp4|mov|webm)(\?|$)/i.test(url);
-const isHls = (url: string) => /\.m3u8(\?|$)/i.test(url);
+const isVideo = (url: string) => /\.(mp4)(\?|$)/i.test(url);
 
-// Component to render thumbnail (image, video, or hls)
 function VideoThumbnail({ 
   url, 
   className, 
@@ -26,26 +22,10 @@ function VideoThumbnail({
   className?: string; 
   controls?: boolean 
 }) {
-  const ref = useRef<HTMLVideoElement>(null);
-  
-  useEffect(() => {
-    if (isHls(url) && ref.current) {
-      if (Hls.isSupported()) {
-        const hls = new Hls();
-        hls.loadSource(url);
-        hls.attachMedia(ref.current);
-        return () => { hls.destroy(); };
-      } else {
-        ref.current.src = url;
-      }
-    }
-  }, [url]);
-  
-  if (isVideo(url) || isHls(url)) {
+  if (isVideo(url)) {
     return (
       <video 
-        ref={ref} 
-        src={!isHls(url) ? url : undefined} 
+        src={url} 
         className={className} 
         muted={!controls}
         preload="metadata" 
@@ -56,7 +36,6 @@ function VideoThumbnail({
   return <img src={url} alt="thumb" className={className} />;
 }
 
-// Enhanced modal with better styling and proper portal rendering
 function PostDetailModal({ 
   postId, 
   onClose 
@@ -387,75 +366,113 @@ function PostDetailModal({
   return createPortal(modalContent, document.body);
 }
 
-export default function NewPostsToday() {
-  interface Post {
+interface Post {
+  _id: string;
+  userID: string;
+  type: 'post' | 'reel';
+  caption: string;
+  isFlagged: boolean;
+  nsfw: boolean;
+  isEnable: boolean;
+  viewCount: number;
+  share: number;
+  createdAt: string;
+  updatedAt: string;
+  media: Array<{
     _id: string;
-    caption: string;
-    thumbnail: string[];
-    author: string;
-    likes: number;
-    comments: number;
-    shares: number;
-    createdAt: string;
-    isEnabled: boolean;
-  }
+    postID: string;
+    imageUrl?: string;
+    videoUrl?: string;
+    tags: Array<{
+      userId: string;
+      handleName: string;
+      positionX: number;
+      positionY: number;
+      _id: string;
+    }>;
+  }>;
+  user: {
+    _id: string;
+    username: string;
+    handleName: string;
+    profilePic: string;
+  };
+  likeCount: number;
+  commentCount: number;
+}
 
-  const [posts, setPosts] = useState<Post[]>([]);
+interface ApiResponse {
+  posts: Post[];
+  totalCount: number;
+  totalPages: number;
+  currentPage: number;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
+}
+
+export default function NewPostsToday() {
+  const [data, setData] = useState<ApiResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [filter, setFilter] = useState<'all'|'post'|'reel'>('all');
   const [previewPostId, setPreviewPostId] = useState<string | null>(null);
+  
+  // pagination and sorting
+  const [sortBy, setSortBy] = useState<'createdAt' | 'likeCount' | 'commentCount' | 'viewCount'>('createdAt');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
 
-  useEffect(() => {
-    (async () => {
-      setLoading(true); 
-      setError('');
-      try {
-        const res = await api.get('/admin/posts/new', {
-          headers: { token: true },
-          params: { range: '7days' }
-        });
-        if (res.data.success) {
-          setPosts((res.data.data as any[]).slice(0,100).map(p => ({
-            ...p,
-            isEnabled: p.isEnabled ?? true
-          })));
-        } else {
-          setError('Không thể tải bài viết mới');
+  const fetchPosts = async (page = 1) => {
+    setLoading(true);
+    setError('');
+    try {
+      const res = await api.get('/admin/posts/new', {
+        headers: { token: true },
+        params: { 
+          range: '7days',
+          sortBy,
+          sortOrder,
+          page,
+          limit: pageSize
         }
-      } catch (e: any) {
-        setError(e.response?.data?.message || 'Lỗi tải dữ liệu');
-      } finally {
-        setLoading(false);
+      });
+      if (res.data.success) {
+        setData(res.data.data);
+        setCurrentPage(page);
+      } else {
+        setError('Không thể tải bài viết mới');
       }
-    })();
-  }, []);
-
-  const isVideoFile = (url: string) => {
-    if (!url) return false;
-    return isVideo(url) || isHls(url);
+    } catch (e: any) {
+      setError(e.response?.data?.message || 'Lỗi tải dữ liệu');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Enhanced filtering logic
-  const filtered = posts.filter(p => {
+  useEffect(() => {
+    fetchPosts(1);
+  }, [sortBy, sortOrder, pageSize]);
+
+  // Type filter
+  const filteredPosts = data?.posts?.filter(post => {
     const term = searchTerm.toLowerCase();
-    if (term && !(p.caption.toLowerCase().includes(term) || p.author.toLowerCase().includes(term))) {
-      return false;
-    }
+    const matchesSearch = !term || 
+      post.caption.toLowerCase().includes(term) || 
+      post.user.username.toLowerCase().includes(term) ||
+      post.user.handleName.toLowerCase().includes(term);
     
-    if (filter === 'post') {
-      // Show posts that have at least one non-video thumbnail
-      return p.thumbnail.some(t => !isVideoFile(t));
-    }
+    const matchesFilter = filter === 'all' || post.type === filter;
     
-    if (filter === 'reel') {
-      // Show posts that have at least one video thumbnail
-      return p.thumbnail.some(t => isVideoFile(t));
+    return matchesSearch && matchesFilter;
+  }) || [];
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage >= 1 && newPage <= (data?.totalPages || 1)) {
+      fetchPosts(newPage);
     }
-    
-    return true;
-  });
+  };
 
   const toggleEnable = async (post: Post) => {
     try {
@@ -463,15 +480,22 @@ export default function NewPostsToday() {
         headers: { token: true }
       });
       if (res.data.success) {
-        alert("Cập nhật bài viết thành công.")
-        setPosts(ps => ps.map(x =>
-          x._id === post._id ? { ...x, isEnabled: res.data.isEnabled } : x
-        ));
+        alert("Cập nhật bài viết thành công.");
+        // Refresh current page
+        fetchPosts(currentPage);
       }
     } catch { /* ignore */ }
   };
 
-  const renderThumbnail = (url: string) => {
+  const renderThumbnail = (post: Post) => {
+    const media = post.media[0];
+    if (!media) {
+      return <div className="w-16 h-10 bg-gray-300 rounded flex items-center justify-center">
+        <span className="text-xs text-gray-500">No media</span>
+      </div>;
+    }
+
+    const url = media.imageUrl || media.videoUrl;
     if (!url) {
       return <div className="w-16 h-10 bg-gray-300 rounded flex items-center justify-center">
         <span className="text-xs text-gray-500">No media</span>
@@ -491,9 +515,10 @@ export default function NewPostsToday() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Bài viết mới hôm nay</h1>
+          <h1 className="text-2xl font-bold">Bài viết mới (7 ngày)</h1>
           <p className="text-sm text-gray-500 mt-1">
-            Hiển thị {filtered.length} / {posts.length}
+            Hiển thị {filteredPosts.length} / {data?.totalCount || 0} bài viết
+            {data && ` (Trang ${data.currentPage}/${data.totalPages})`}
           </p>
         </div>
       </div>
@@ -507,13 +532,47 @@ export default function NewPostsToday() {
           className="flex-1 min-w-[200px]"
         />
         <Select value={filter} onValueChange={v => setFilter(v as any)}>
-          <SelectTrigger className="min-w-[150px]">
+          <SelectTrigger className="min-w-[120px]">
             <SelectValue placeholder="Lọc loại" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Tất cả</SelectItem>
             <SelectItem value="post">Posts</SelectItem>
             <SelectItem value="reel">Reels</SelectItem>
+          </SelectContent>
+        </Select>
+        
+        <Select value={sortBy} onValueChange={v => setSortBy(v as any)}>
+          <SelectTrigger className="min-w-[140px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="createdAt">Thời gian tạo</SelectItem>
+            <SelectItem value="likeCount">Lượt thích</SelectItem>
+            <SelectItem value="commentCount">Bình luận</SelectItem>
+            <SelectItem value="viewCount">Lượt xem</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Select value={sortOrder} onValueChange={v => setSortOrder(v as any)}>
+          <SelectTrigger className="min-w-[120px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="desc">Giảm dần</SelectItem>
+            <SelectItem value="asc">Tăng dần</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Select value={pageSize.toString()} onValueChange={v => setPageSize(Number(v))}>
+          <SelectTrigger className="min-w-[100px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="10">10</SelectItem>
+            <SelectItem value="20">20</SelectItem>
+            <SelectItem value="50">50</SelectItem>
+            <SelectItem value="100">100</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -531,39 +590,85 @@ export default function NewPostsToday() {
           <TableHeader>
             <TableRow className="bg-gray-50">
               <TableHead>#</TableHead>
+              <TableHead>Loại</TableHead>
               <TableHead>Phương tiện</TableHead>
               <TableHead>Chú thích</TableHead>
               <TableHead>Người đăng</TableHead>
+              <TableHead>Thống kê</TableHead>
+              <TableHead>Trạng thái</TableHead>
               <TableHead className="text-right">Hành động</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading
-              ? Array(10).fill(0).map((_,i)=>(
+              ? Array(pageSize).fill(0).map((_, i) => (
                   <TableRow key={i} className="animate-pulse">
-                    <TableCell colSpan={6} className="h-8 bg-gray-200"/>
+                    <TableCell colSpan={8} className="h-12 bg-gray-200"/>
                   </TableRow>
                 ))
-              : filtered.map((p,i)=>(
-                  <TableRow key={p._id} className="hover:bg-gray-50">
-                    <TableCell>{i+1}</TableCell>
+              : filteredPosts.map((post, i) => (
+                  <TableRow key={post._id} className="hover:bg-gray-50">
+                    <TableCell>{((currentPage - 1) * pageSize) + i + 1}</TableCell>
                     <TableCell>
-                      {renderThumbnail(p.thumbnail[0])}
+                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                        post.type === 'post' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'
+                      }`}>
+                        {post.type === 'post' ? <Image className="w-3 h-3 mr-1" /> : <Video className="w-3 h-3 mr-1" />}
+                        {post.type}
+                      </span>
                     </TableCell>
-                    <TableCell className="max-w-[200px] truncate">{p.caption}</TableCell>
-                    <TableCell>{p.author || '(Ẩn danh)'}</TableCell>
+                    <TableCell>
+                      {renderThumbnail(post)}
+                    </TableCell>
+                    <TableCell className="max-w-[200px] truncate">{post.caption || '(Không có chú thích)'}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <img 
+                          src={post.user.profilePic} 
+                          alt="avatar" 
+                          className="w-6 h-6 rounded-full object-cover"
+                        />
+                        <span className="truncate">{post.user.username}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="text-xs space-y-1">
+                        <div>👁️ {post.viewCount}</div>
+                        <div>❤️ {post.likeCount}</div>
+                        <div>💬 {post.commentCount}</div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col gap-1">
+                        <span className={`px-2 py-1 rounded-full text-xs inline-flex items-center justify-center ${
+                          post.isEnable ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                        }`}>
+                          {post.isEnable ? 'Enabled' : 'Disabled'}
+                        </span>
+                        {post.isFlagged && (
+                          <span className="px-2 py-1 rounded-full text-xs bg-orange-100 text-orange-800 inline-flex items-center justify-center">
+                            Flagged
+                          </span>
+                        )}
+                        {post.nsfw && (
+                          <span className="px-2 py-1 rounded-full text-xs bg-red-100 text-red-800 inline-flex items-center justify-center">
+                            NSFW
+                          </span>
+                        )}
+                      </div>
+                    </TableCell>
                     <TableCell className="text-right space-x-1">
                       <Button 
                         size="icon" 
                         variant="ghost" 
-                        onClick={() => setPreviewPostId(p._id)}
+                        onClick={() => setPreviewPostId(post._id)}
                       >
                         <Eye className="w-4 h-4"/>
                       </Button>
                       <Button 
                         size="icon" 
                         variant="ghost" 
-                        onClick={() => toggleEnable(p)}
+                        onClick={() => toggleEnable(post)}
                       >
                         <Trash className="w-4 h-4 text-red-500"/>
                       </Button>
@@ -574,6 +679,56 @@ export default function NewPostsToday() {
           </TableBody>
         </Table>
       </div>
+
+      {/* Pagination */}
+      {data && data.totalPages > 1 && (
+        <div className="flex items-center justify-between">
+          <div className="text-sm text-gray-500">
+            Trang {data.currentPage} / {data.totalPages} 
+            ({data.totalCount} bài viết)
+          </div>
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={!data.hasPrevPage || loading}
+            >
+              <ChevronLeft className="w-4 h-4" />
+              Trước
+            </Button>
+            
+            {/* Page numbers */}
+            <div className="flex gap-1">
+              {Array.from({ length: Math.min(5, data.totalPages) }, (_, i) => {
+                const pageNum = Math.max(1, Math.min(data.totalPages - 4, currentPage - 2)) + i;
+                return (
+                  <Button
+                    key={pageNum}
+                    variant={pageNum === currentPage ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handlePageChange(pageNum)}
+                    disabled={loading}
+                    className="w-10"
+                  >
+                    {pageNum}
+                  </Button>
+                );
+              })}
+            </div>
+
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={!data.hasNextPage || loading}
+            >
+              Sau
+              <ChevronRight className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Preview Modal */}
       <PostDetailModal

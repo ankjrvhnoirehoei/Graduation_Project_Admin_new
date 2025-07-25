@@ -3,14 +3,39 @@ import api from "../../lib/axios";
 import VideoPreview from "../VideoPreview";
 import PostPreviewModal from "../PostPreviewModal";
 
-interface TopVideo {
-  id: string;
+interface Media {
+  _id: string;
+  postID: string;
+  imageUrl?: string;
+  videoUrl?: string;
+  tags: any[];
+}
+
+interface User {
+  _id: string;
+  username: string;
+  handleName: string;
+  profilePic: string;
+}
+
+interface TopPost {
+  _id: string;
+  userID: string;
+  type: "post" | "reel";
   caption: string;
-  thumbnail: string;
-  author: string;
-  likes: number;
-  comments: number;
-  shares: number;
+  isFlagged: boolean;
+  nsfw: boolean;
+  isEnable: boolean;
+  location?: string;
+  viewCount: number;
+  share: number;
+  createdAt: string;
+  updatedAt: string;
+  media: Media[];
+  user: User;
+  likeCount: number;
+  commentCount: number;
+  id: string;
 }
 
 interface TopUser {
@@ -22,32 +47,21 @@ interface TopUser {
 }
 
 export default function DashboardBottomSection() {
-  const [topVideos, setTopVideos] = useState<TopVideo[]>([]);
+  const [topPosts, setTopPosts] = useState<TopPost[]>([]);
   const [topUsers, setTopUsers] = useState<TopUser[]>([]);
-  const [selectedPost, setSelectedPost] = useState<TopVideo | null>(null);
+  const [selectedPost, setSelectedPost] = useState<TopPost | null>(null);
 
   useEffect(() => {
-    const fetchTopLikedVideos = async () => {
+    const fetchTopLikedPosts = async () => {
       try {
         const res = await api.get("/admin/posts/top-liked", {
           headers: { token: true },
         });
 
-        const videos = res.data.map((video: any) => ({
-          id: video._id,
-          caption: video.caption,
-          thumbnail: Array.isArray(video.thumbnail)
-            ? video.thumbnail[0]
-            : video.thumbnail,
-          author: video.author,
-          likes: video.likes,
-          comments: video.comments,
-          shares: video.shares,
-        }));
-
-        setTopVideos(videos);
+        // The API already returns the correct structure, just set it directly
+        setTopPosts(res.data);
       } catch (error) {
-        console.error("Lỗi khi fetch top liked videos:", error);
+        console.error("Lỗi khi fetch top liked posts:", error);
       }
     };
 
@@ -62,22 +76,36 @@ export default function DashboardBottomSection() {
       }
     };
 
-    fetchTopLikedVideos();
+    fetchTopLikedPosts();
     fetchTopUsers();
   }, []);
 
+  // Helper function to get the first media URL for preview
+  const getPreviewMedia = (post: TopPost) => {
+    if (!post.media || post.media.length === 0) return null;
+    const firstMedia = post.media[0];
+    return firstMedia.videoUrl || firstMedia.imageUrl || null;
+  };
+
+  // Helper function to check if media is video
+  const isVideoMedia = (mediaUrl: string | null) => {
+    if (!mediaUrl) return false;
+    return mediaUrl.endsWith('.mp4') || mediaUrl.includes('video');
+  };
+
   return (
     <div className="flex flex-col md:flex-row gap-4 mt-6">
-      {/* Top Liked Videos */}
+      {/* Top Liked Posts */}
       <div className="w-full md:w-[70%] bg-white rounded-lg shadow p-4">
         <h4 className="text-md font-semibold mb-3">
-          Video nhiều lượt thích nhất tháng
+          Bài đăng nhiều lượt thích nhất tháng
         </h4>
         <div className="overflow-auto">
           <table className="w-full text-sm text-left border border-gray-200">
             <thead className="bg-gray-100 text-gray-600">
               <tr>
                 <th className="p-2">Bài đăng</th>
+                <th className="p-2">Loại</th>
                 <th className="p-2">Nội dung</th>
                 <th className="p-2">Người đăng</th>
                 <th className="p-2 text-center">Số lượt thích</th>
@@ -86,38 +114,66 @@ export default function DashboardBottomSection() {
               </tr>
             </thead>
             <tbody>
-              {topVideos.map((video) => (
-                <tr
-                  key={video.id}
-                  className="border-t hover:bg-gray-50 transition"
-                >
-                  <td
-                    className="p-2 cursor-pointer"
-                    onClick={() => setSelectedPost(video)}
+              {topPosts.map((post) => {
+                const previewMedia = getPreviewMedia(post);
+                const isVideo = isVideoMedia(previewMedia);
+                
+                return (
+                  <tr
+                    key={post.id}
+                    className="border-t hover:bg-gray-50 transition"
                   >
-                    {video.thumbnail.endsWith(".m3u8") ||
-                    video.thumbnail.endsWith(".mp4") ? (
-                      <VideoPreview
-                        src={video.thumbnail}
-                        className="w-16 h-10 object-cover rounded"
-                      />
-                    ) : (
-                      <img
-                        src={video.thumbnail}
-                        alt="thumb"
-                        className="w-16 h-10 object-cover rounded"
-                      />
-                    )}
-                  </td>
-                  <td className="p-2 max-w-[150px] truncate">
-                    {video.caption || "Không có mô tả"}
-                  </td>
-                  <td className="p-2 max-w-[150px] truncate">{video.author}</td>
-                  <td className="p-2 text-center">{video.likes}</td>
-                  <td className="p-2 text-center">{video.comments}</td>
-                  <td className="p-2 text-center">{video.shares}</td>
-                </tr>
-              ))}
+                    <td
+                      className="p-2 cursor-pointer"
+                      onClick={() => setSelectedPost(post)}
+                    >
+                      {previewMedia ? (
+                        isVideo ? (
+                          <VideoPreview
+                            src={previewMedia}
+                            className="w-16 h-10 object-cover rounded"
+                          />
+                        ) : (
+                          <img
+                            src={previewMedia}
+                            alt="preview"
+                            className="w-16 h-10 object-cover rounded"
+                          />
+                        )
+                      ) : (
+                        <div className="w-16 h-10 bg-gray-200 rounded flex items-center justify-center text-xs text-gray-500">
+                          Không có media
+                        </div>
+                      )}
+                    </td>
+                    <td className="p-2">
+                      <span className={`px-2 py-1 rounded text-xs font-medium ${
+                        post.type === 'reel' 
+                          ? 'bg-purple-100 text-purple-800' 
+                          : 'bg-blue-100 text-blue-800'
+                      }`}>
+                        {post.type === 'reel' ? 'Reel' : 'Post'}
+                      </span>
+                    </td>
+                    <td className="p-2 max-w-[150px] truncate">
+                      {post.caption || "Không có mô tả"}
+                    </td>
+                    <td className="p-2 max-w-[150px] truncate">
+                      <div className="flex items-center space-x-2">
+                        <img 
+                          src={post.user.profilePic} 
+                          alt={post.user.username}
+                          className="w-6 h-6 rounded-full object-cover"
+                        />
+                        <span>@{post.user.handleName}</span>
+                      </div>
+                    </td>
+                    <td className="p-2 text-center">{post.likeCount}</td>
+                    <td className="p-2 text-center">{post.commentCount}</td>
+                    <td className="p-2 text-center">{post.share}</td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -150,7 +206,7 @@ export default function DashboardBottomSection() {
         </div>
       </div>
 
-      {/* Modal preview video */}
+      {/* Modal preview post */}
       <PostPreviewModal
         post={selectedPost}
         onClose={() => setSelectedPost(null)}

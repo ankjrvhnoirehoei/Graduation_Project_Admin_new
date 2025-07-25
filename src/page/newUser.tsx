@@ -168,16 +168,6 @@ function EnhancedUserModal({ user, onClose }: { user: any; onClose: () => void }
               ))}
           </div>
 
-          {/* VIP Status Badge */}
-          {/* {user.isVip && (
-            <div className="mt-6 flex justify-center">
-              <div className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-white px-4 py-2 rounded-full flex items-center gap-2 shadow-lg">
-                <Crown className="w-4 h-4" />
-                <span className="font-medium">Tài khoản VIP</span>
-              </div>
-            </div>
-          )} */}
-
           {/* Deleted Status */}
           {user.deletedAt && (
             <div className="mt-4 flex justify-center">

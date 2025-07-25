@@ -23,7 +23,7 @@ export function LoginForm() {
 
     try {
       // 1. Đăng nhập
-      const res = await fetch("http://cirla.io.vn/users/login", {
+      const res = await fetch("http://[::1]:4001/users/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -38,7 +38,7 @@ export function LoginForm() {
       sessionStorage.setItem("refreshToken", refreshToken);
 
       // 3. Kiểm tra role user
-      const userRes = await fetch("http://cirla.io.vn/users/me", {
+      const userRes = await fetch("http://[::1]:4001/users/me", {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },

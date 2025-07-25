@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { BarChart, Bar, CartesianGrid, XAxis, YAxis } from "recharts";
-import { TrendingUp } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -25,8 +25,24 @@ const chartConfig = {
   },
 };
 
+interface WeeklyStatsData {
+  day: string;
+  posts: number;
+  percentageChange: number;
+  trend: string;
+}
+
 export default function VideoBarChart() {
   const [data, setData] = useState<{ day: string; videos: number }[]>([]);
+  const [overallStats, setOverallStats] = useState<{
+    totalChange: number;
+    trend: string;
+    currentTotal: number;
+  }>({
+    totalChange: 0,
+    trend: "no change",
+    currentTotal: 0,
+  });
 
   useEffect(() => {
     const fetchWeeklyStats = async () => {
@@ -34,11 +50,49 @@ export default function VideoBarChart() {
         const res = await api.get("/admin/posts/weekly", {
           headers: { token: true },
         });
-        const transformed = res.data.map((item: any) => ({
+        
+        const rawData: WeeklyStatsData[] = res.data;
+        
+        const transformed = rawData.map((item) => ({
           day: item.day,
           videos: item.posts,
         }));
+        
         setData(transformed);
+
+        // Calculate overall weekly statistics
+        const currentTotal = rawData.reduce((sum, item) => sum + item.posts, 0);
+        
+        // Calculate weighted average of daily changes for overall trend
+        const dailyChanges = rawData.filter(item => item.posts > 0); // Only consider days with posts
+        
+        if (dailyChanges.length > 0) {
+          const totalCurrentPosts = dailyChanges.reduce((sum, item) => sum + item.posts, 0);
+          const weightedChange = dailyChanges.reduce((sum, item) => {
+            const weight = item.posts / totalCurrentPosts;
+            return sum + (item.percentageChange * weight);
+          }, 0);
+          
+          const overallTrend = dailyChanges.some(item => item.trend === "increase") 
+            ? "increase" 
+            : dailyChanges.some(item => item.trend === "decrease")
+            ? "decrease"
+            : "no change";
+          
+          setOverallStats({
+            totalChange: Math.abs(Math.round(weightedChange)),
+            trend: overallTrend,
+            currentTotal,
+          });
+        } else {
+          // No posts this week
+          setOverallStats({
+            totalChange: 0,
+            trend: "no change",
+            currentTotal: 0,
+          });
+        }
+
       } catch (err) {
         console.error("Lỗi khi fetch thống kê tuần:", err);
       }
@@ -47,11 +101,43 @@ export default function VideoBarChart() {
     fetchWeeklyStats();
   }, []);
 
+  const getTrendIcon = () => {
+    switch (overallStats.trend) {
+      case "increase":
+        return <TrendingUp className="h-4 w-4" />;
+      case "decrease":
+        return <TrendingDown className="h-4 w-4" />;
+      default:
+        return <Minus className="h-4 w-4" />;
+    }
+  };
+
+  const getTrendColor = () => {
+    switch (overallStats.trend) {
+      case "increase":
+        return "text-green-600";
+      case "decrease":
+        return "text-red-600";
+      default:
+        return "text-gray-600";
+    }
+  };
+
+  const getTrendText = () => {
+    if (overallStats.trend === "no change" || overallStats.totalChange === 0) {
+      return "Không có thay đổi so với tuần trước";
+    }
+    const action = overallStats.trend === "increase" ? "Tăng" : "Giảm";
+    return `${action} ${overallStats.totalChange}% so với tuần trước`;
+  };
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Thống kê video tuần này</CardTitle>
-        <CardDescription>Thứ 2 → Chủ Nhật</CardDescription>
+        <CardDescription>
+          Thứ 2 → Chủ Nhật (Tổng: {overallStats.currentTotal} video)
+        </CardDescription>
       </CardHeader>
 
       <CardContent>
@@ -68,7 +154,7 @@ export default function VideoBarChart() {
               tickLine={false}
               axisLine={false}
               tickMargin={8}
-              domain={[0, "dataMax + 2"]} // tự động scale
+              domain={[0, "dataMax + 2"]}
             />
             <ChartTooltip
               cursor={false}
@@ -85,9 +171,9 @@ export default function VideoBarChart() {
       </CardContent>
 
       <CardFooter className="flex-col items-start gap-2 text-sm">
-        <div className="flex gap-2 font-medium text-green-600">
-          Tăng 8.4% so với tuần trước
-          <TrendingUp className="h-4 w-4" />
+        <div className={`flex gap-2 font-medium ${getTrendColor()}`}>
+          {getTrendText()}
+          {getTrendIcon()}
         </div>
         <div className="text-muted-foreground">
           Tổng hợp dữ liệu trong 7 ngày qua

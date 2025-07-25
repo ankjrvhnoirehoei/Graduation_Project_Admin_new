@@ -1,3 +1,4 @@
+// DashboardCharts.tsx
 import {
   Card,
   CardContent,
@@ -19,8 +20,6 @@ import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-  ChartLegend,
-  ChartLegendContent,
 } from "../../components/ui/chart";
 import { TrendingUp, TrendingDown } from "lucide-react";
 import {
@@ -31,13 +30,16 @@ import {
   YAxis,
   PieChart,
   Pie,
+  Cell,
+  Legend,
+  LegendProps,
 } from "recharts";
 import api from "../../lib/axios";
 
 const pieChartConfig: { [key: string]: { label: string; color: string } } = {
-  Post: { label: "Post", color: "var(--chart-1)" },
-  Reel: { label: "Reel", color: "var(--chart-2)" },
-  Story: { label: "Story", color: "var(--chart-3)" },
+  Post: { label: "Post", color: "#8884d8" },
+  Reel: { label: "Reel", color: "#82ca9d" },
+  Story: { label: "Story", color: "#ffc658" },
 };
 
 type MonthKey =
@@ -57,8 +59,39 @@ type MonthKey =
 const barChartConfig = {
   count: {
     label: "Tài khoản",
-    color: "var(--chart-1)",
+    color: "#8884d8",
   },
+};
+
+// Custom Legend Component
+const CustomLegend: React.FC<LegendProps> = ({ payload }) => {
+  if (!payload || !payload.length) {
+    return null;
+  }
+
+  return (
+    <div className="flex items-center justify-center gap-4 pt-3">
+      {payload.map((item, index) => {
+        const config = pieChartConfig[item.value || ""];
+        return (
+          <div
+            key={`legend-${index}`}
+            className="flex items-center gap-1.5"
+          >
+            <div
+              className="h-2 w-2 shrink-0 rounded-[2px]"
+              style={{
+                backgroundColor: item.color,
+              }}
+            />
+            <span className="text-sm text-muted-foreground">
+              {config?.label || item.value}
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
 };
 
 export default function DashboardCharts() {
@@ -133,17 +166,29 @@ export default function DashboardCharts() {
           <CardTitle>Tỷ lệ bài đăng</CardTitle>
           <CardDescription>Thống kê theo loại</CardDescription>
         </CardHeader>
-        <CardContent className="flex-1 pb-0">
+        <CardContent className="flex-1 pb-0 flex items-center justify-center">
           <ChartContainer
             config={pieChartConfig}
-            className="mx-auto aspect-square max-h-[260px]"
+            className="mx-auto aspect-square max-h-[280px] w-full"
           >
-            <PieChart>
-              <Pie data={pieData} dataKey="value" nameKey="type" />
-              <ChartLegend
-                content={<ChartLegendContent nameKey="type" />}
-                className="-translate-y-2 flex-wrap gap-2 *:basis-1/3 *:justify-center"
+            <PieChart width={280} height={280}>
+              <ChartTooltip
+                cursor={false}
+                content={<ChartTooltipContent hideLabel />}
               />
+              <Pie 
+                data={pieData} 
+                dataKey="value" 
+                nameKey="type"
+                cx="50%"
+                cy="45%"
+                outerRadius={90}
+              >
+                {pieData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.fill} />
+                ))}
+              </Pie>
+              <Legend content={<CustomLegend />} />
             </PieChart>
           </ChartContainer>
         </CardContent>
@@ -200,7 +245,7 @@ export default function DashboardCharts() {
                 cursor={false}
                 content={<ChartTooltipContent hideLabel />}
               />
-              <Bar dataKey="count" radius={6} fill="var(--color-count)" />
+              <Bar dataKey="count" radius={6} fill="#8884d8" />
             </BarChart>
           </ChartContainer>
         </CardContent>
