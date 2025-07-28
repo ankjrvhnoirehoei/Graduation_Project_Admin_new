@@ -5,6 +5,7 @@ import { CardContent } from '../ui/card';
 import { RangeType } from '../../components/report/type';
 import { ReportsReasonsChart } from './visual/ReportsReasonsChart';
 import { ReportedUsersChart } from './visual/ReportedUsersChart';
+import { StoriesReportChart } from './visual/StoriesReportChart';
 
 interface Props {
   rangeType: RangeType;
@@ -49,6 +50,13 @@ export default function ChartsSection({ rangeType }: Props) {
           Biểu đồ so sánh người dùng bị báo cáo nhiều lần ({label})
         </h3>
         <CardContent className='h-[400px]'> <ReportedUsersChart rangeType={rangeType} /></CardContent>
+      </div>
+
+      <div className="bg-white p-4 rounded-lg shadow h-[490px] pt-10">
+        <h3 className="text-sm font-semibold text-gray-700 mb-2">
+          Biểu đồ báo cáo stories ({label})
+        </h3>
+        <CardContent className='h-[400px]'> <StoriesReportChart rangeType={rangeType} /> </CardContent>
       </div>
 
       <div className="bg-white p-4 rounded-lg shadow h-[490px] pt-10">
