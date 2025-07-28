@@ -46,7 +46,6 @@ function EnhancedUserModal({ user, onClose }: { user: any; onClose: () => void }
     handleName: 'Tên hiển thị',
     email: 'Email',
     profilePic: 'Ảnh đại diện',
-    isVip: 'Tài khoản VIP',
     deletedAt: 'Đã xóa',
     createdAt: 'Ngày tạo',
     dateOfBirth: 'Ngày sinh',
@@ -63,7 +62,6 @@ function EnhancedUserModal({ user, onClose }: { user: any; onClose: () => void }
     if (value === null || value === undefined) return 'Không có';
     
     switch (key) {
-      case 'isVip':
       case 'deletedAt':
       case 'verified':
         return value ? 'Có' : 'Không';
@@ -88,8 +86,6 @@ function EnhancedUserModal({ user, onClose }: { user: any; onClose: () => void }
       case 'createdAt':
       case 'dateOfBirth':
         return <Calendar className="w-4 h-4" />;
-      case 'isVip':
-        return <Crown className="w-4 h-4" />;
       case 'deletedAt':
         return <AlertCircle className="w-4 h-4" />;
       default:
@@ -206,7 +202,6 @@ export default function NewUsersToday() {
     handleName: string;
     email: string;
     profilePic?: string;
-    isVip: boolean;
     deletedAt: boolean;
     createdAt: string;
     dateOfBirth?: string;
@@ -248,7 +243,6 @@ export default function NewUsersToday() {
   // local filters
   const filtered = users.filter(u => {
     if (searchTerm && !u.handleName.toLowerCase().includes(searchTerm.toLowerCase())) return false;
-    // if (filter === 'vip' && !u.isVip) return false;
     if (filter === 'deleted' && !u.deletedAt) return false;
     return true;
   });
@@ -331,7 +325,6 @@ export default function NewUsersToday() {
                     </TableCell>
                     <TableCell>{u.email}</TableCell>
                     <TableCell>{new Date(u.createdAt).toLocaleString()}</TableCell>
-                    {/* <TableCell>{u.isVip ? '✔' : '–'}</TableCell> */}
                     <TableCell>{u.deletedAt ? '✔' : '–'}</TableCell>
                     <TableCell className="text-right space-x-1">
                       {/* Eye: show details */}

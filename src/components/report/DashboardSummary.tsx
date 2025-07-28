@@ -59,7 +59,7 @@ export default function DashboardSummary({ rangeType }: Props) {
   if (!metrics) return null;
   const cards = [
     { label: 'Người dùng mới', value: metrics.users,    change: `${metrics.fluctuation.percentageChange}%` },
-    { label: 'Video mới',      value: metrics.contents, change: `${metrics.fluctuation.percentageChange}%` },
+    { label: 'Bài viết mới',      value: metrics.contents, change: `${metrics.fluctuation.percentageChange}%` },
     { label: 'Lượt xem',       value: metrics.views,    change: `${metrics.fluctuation.percentageChange}%` },
     { label: 'Bình luận',      value: metrics.comments, change: `${metrics.fluctuation.percentageChange}%` },
   ];

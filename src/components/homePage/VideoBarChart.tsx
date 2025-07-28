@@ -136,7 +136,7 @@ export default function VideoBarChart() {
       <CardHeader>
         <CardTitle>Thống kê video tuần này</CardTitle>
         <CardDescription>
-          Thứ 2 → Chủ Nhật (Tổng: {overallStats.currentTotal} video)
+          Thứ 2 → Chủ Nhật (Tổng: {overallStats.currentTotal} bài viết)
         </CardDescription>
       </CardHeader>
 
@@ -164,7 +164,7 @@ export default function VideoBarChart() {
               dataKey="videos"
               fill="var(--chart-1)"
               radius={[6, 6, 0, 0]}
-              name="Video"
+              name="Bài viết"
             />
           </BarChart>
         </ChartContainer>

@@ -71,7 +71,7 @@ export default function VideoRadarChart() {
   return (
     <Card className="w-full">
       <CardHeader className="items-center pb-3">
-        <CardTitle className="text-base">Tỉ lệ phân phối video</CardTitle>
+        <CardTitle className="text-base">Tỉ lệ phân phối bài viết</CardTitle>
         <CardDescription className="text-xs text-center">
           Posts & Stories trong 6 tháng gần nhất
         </CardDescription>
