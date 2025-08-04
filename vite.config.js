@@ -6,7 +6,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/users': {
-        target: 'http://[::1]:4001',
+        target: 'http://cirla.io.vn',
         changeOrigin: true,
         secure: false,
         // rewrite: (path) => path.replace(/^\/users/, '/api/users')

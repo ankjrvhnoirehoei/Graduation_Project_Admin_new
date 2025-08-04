@@ -50,40 +50,8 @@ export default function Story() {
         </div>
 
         <div className="flex items-center space-x-4">
-          <input
-            type="text"
-            placeholder="Tìm kiếm..."
-            className="px-3 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-          />
 
-          <div className="relative">
-            <FiBell
-              size={18}
-              className={`
-                transition
-                ${unreadReports > 0
-                  ? "text-yellow-700 hover:text-yellow-600"
-                  : "text-gray-600 hover:text-black"
-                }
-              `}
-              onClick={() => setShowNotif((v) => !v)}
-              style={{ cursor: "pointer" }}
-            />
-            {unreadReports > 0 && (
-              <span className="absolute -top-1 -right-1 inline-flex items-center justify-center w-3 h-3 text-[0.55rem] font-semibold text-white bg-red-600 rounded-full">
-                {unreadReports}
-              </span>
-            )}
-            {showNotif && (
-              <div className="absolute top-full right-0 mt-2 z-50">
-                <ReportNotification
-                  onCountsChange={(userCount, contentCount, storyCount = 0) => {
-                    setUnreadReports(userCount + contentCount + storyCount);
-                  }}
-                />
-              </div>
-            )}
-          </div>
+          
 
           <div className="flex items-center space-x-2">
             <img
@@ -100,7 +68,7 @@ export default function Story() {
 
       <div className="flex flex-col md:flex-row gap-4">
         <div className="w-full md:w-[70%] flex flex-col gap-4">
-          <StoryAreaChart />
+          {/* <StoryAreaChart /> */}
           <StoryPostRadialSummary />
         </div>
 

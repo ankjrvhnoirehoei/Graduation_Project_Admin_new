@@ -30,7 +30,7 @@ function ProtectedLayout() {
         const accessToken = sessionStorage.getItem("accessToken");
         if (!accessToken) throw new Error("No token");
 
-        const res = await fetch("http://[::1]:4001/users/me", {
+        const res = await fetch("http://cirla.io.vn/users/me", {
           headers: { Authorization: `Bearer ${accessToken}` },
         });
 
