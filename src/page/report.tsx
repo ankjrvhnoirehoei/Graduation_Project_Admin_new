@@ -206,7 +206,7 @@ export default function Report() {
         <TabsList className="bg-muted p-1 rounded mb-4">
           <TabsTrigger value="users">Người dùng</TabsTrigger>
           <TabsTrigger value="videos">Bài viết</TabsTrigger>
-          <TabsTrigger value="stories">Stories</TabsTrigger>
+          {/* <TabsTrigger value="stories">Stories</TabsTrigger> */}
         </TabsList>
 
         <TabsContent value="users">
@@ -231,7 +231,7 @@ export default function Report() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="stories">
+        {/* <TabsContent value="stories">
           <Card>
             <CardHeader>
               <CardTitle>Danh sách stories mới</CardTitle>
@@ -240,7 +240,7 @@ export default function Report() {
               <StoriesTable />
             </CardContent>
           </Card>
-        </TabsContent>
+        </TabsContent> */}
       </Tabs>
     </div>
   );

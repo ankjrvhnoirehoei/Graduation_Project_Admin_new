@@ -14,9 +14,9 @@ export default function DetailedTables({ type }: Props) {
     return <UsersTable />;
   }
 
-  if (type === 'stories') {
-    return <StoriesTable />;
-  }
+  // if (type === 'stories') {
+  //   return <StoriesTable />;
+  // }
 
   return <ContentTable />;
 }
