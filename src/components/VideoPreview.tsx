@@ -1,60 +1,58 @@
 import { useEffect, useRef, useState } from "react";
-import Hls from "hls.js";
-import { Play } from "lucide-react";
+import { PlayCircleOutlined } from "@ant-design/icons";
 
 interface Props {
   src: string;
   className?: string;
+  onClick?: () => void;
 }
 
-export default function VideoPreview({ src, className }: Props) {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
+export default function VideoPreview({ src, className, onClick }: Props) {
+  const [thumbnail, setThumbnail] = useState<string | null>(null);
 
   useEffect(() => {
-    if (videoRef.current) {
-      if (Hls.isSupported()) {
-        const hls = new Hls();
-        hls.loadSource(src);
-        hls.attachMedia(videoRef.current);
-        return () => hls.destroy();
-      } else if (
-        videoRef.current.canPlayType("application/vnd.apple.mpegurl")
-      ) {
-        videoRef.current.src = src;
+    const video = document.createElement("video");
+    video.src = src;
+    video.crossOrigin = "anonymous"; // Nếu video trên domain khác
+    video.muted = true;
+    video.currentTime = 0.1; // tránh frame đen ở 0
+
+    const handleLoadedData = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext("2d");
+      if (ctx) {
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const dataURL = canvas.toDataURL("image/png");
+        setThumbnail(dataURL);
       }
-    }
+    };
+
+    video.addEventListener("loadeddata", handleLoadedData);
+    return () => {
+      video.removeEventListener("loadeddata", handleLoadedData);
+    };
   }, [src]);
 
-  const handleVideoPress = () => {
-    if (videoRef.current) {
-      if (isPlaying) {
-        videoRef.current.pause();
-        setIsPlaying(false);
-      } else {
-        videoRef.current.play();
-        setIsPlaying(true);
-      }
-    }
-  };
-
   return (
-    <div className="relative inline-block cursor-pointer" onClick={handleVideoPress}>
-      <video
-        ref={videoRef}
-        className={className}
-        muted
-        playsInline
-        onPlay={() => setIsPlaying(true)}
-        onPause={() => setIsPlaying(false)}
-      />
-      {!isPlaying && (
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-12 h-12 bg-black bg-opacity-60 rounded-full flex items-center justify-center">
-            <Play size={20} className="text-white ml-1" />
-          </div>
-        </div>
+    <div
+      className={`relative rounded overflow-hidden group cursor-pointer ${className}`}
+      onClick={onClick}
+    >
+      {thumbnail ? (
+        <img
+          src={thumbnail}
+          alt="Video thumbnail"
+          className="w-full h-full object-cover"
+        />
+      ) : (
+        <div className="w-full h-full bg-gray-200 animate-pulse" />
       )}
+
+      <div className="absolute inset-0 bg-black bg-opacity-30 group-hover:bg-opacity-50 flex items-center justify-center transition">
+        <PlayCircleOutlined style={{ fontSize: 22, color: "white" }} />
+      </div>
     </div>
   );
 }

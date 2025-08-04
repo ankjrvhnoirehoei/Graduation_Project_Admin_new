@@ -19,6 +19,7 @@ import NewUsersToday from "./page/newUser";
 import NewPostsToday from "./page/newPost";
 import NewReportToday from "./page/newReport";
 import Issues from "./page/issues";
+import api from "./lib/axios";
 
 function ProtectedLayout() {
   const location = useLocation();
@@ -27,16 +28,9 @@ function ProtectedLayout() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const accessToken = sessionStorage.getItem("accessToken");
-        if (!accessToken) throw new Error("No token");
+        const res = await api.get("/users/me");
 
-        const res = await fetch("http://cirla.io.vn/users/me", {
-          headers: { Authorization: `Bearer ${accessToken}` },
-        });
-
-        if (!res.ok) throw new Error("Unauthorized");
-
-        const user = await res.json();
+        const user = res.data;
         if (user.role !== "admin") throw new Error("Not admin");
 
         setAuthorized(true);

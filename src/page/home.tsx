@@ -44,7 +44,7 @@ export default function Home() {
         const data = statsRes.data;
         setStats([
           {
-            label: "Người dùng",
+            label: "Người dùng mới",
             value: data.newUsers,
             icon: <FiUsers size={20} />,
             link: "/new-users",
@@ -52,7 +52,7 @@ export default function Home() {
             text: "text-blue-600",
           },
           {
-            label: "Bài post",
+            label: "Bài post mới",
             value: data.newPosts,
             icon: <FiVideo size={20} />,
             link: "/new-posts",
@@ -60,7 +60,7 @@ export default function Home() {
             text: "text-purple-600",
           },
           {
-            label: "Báo cáo",
+            label: "Báo cáo mới",
             value: data.newReports,
             icon: <FiAlertCircle size={20} />,
             link: "/new-reports",
@@ -71,8 +71,7 @@ export default function Home() {
 
         // sum the unread counts from both endpoints
         const totalUnread =
-          (contentRes.data.totalCount || 0) +
-          (userRes.data.totalCount || 0);
+          (contentRes.data.totalCount || 0) + (userRes.data.totalCount || 0);
         setUnreadReports(totalUnread);
       } catch (err) {
         console.error("Lỗi khi fetch stats or unread counts:", err);
@@ -85,7 +84,7 @@ export default function Home() {
   // Handler to receive updated unread counts from ReportNotification
   const handleReportCounts = (userCount: number, contentCount: number) => {
     setUnreadReports(userCount + contentCount);
-  };  
+  };
 
   return (
     <div className="p-4 space-y-4">
@@ -102,16 +101,17 @@ export default function Home() {
               size={18}
               className={`
                 transition 
-                ${unreadReports > 0 
-                  ? "text-yellow-700 hover:text-yellow-600 bg" 
-                  : "text-gray-600 hover:text-black"}
+                ${
+                  unreadReports > 0
+                    ? "text-yellow-700 hover:text-yellow-600 bg"
+                    : "text-gray-600 hover:text-black"
+                }
               `}
-              onClick={() => setShowNotif(v => !v)}
+              onClick={() => setShowNotif((v) => !v)}
               style={{ cursor: "pointer" }}
             />
             {unreadReports > 0 && (
-              <span
-                className="absolute -top-1 -right-1 inline-flex items-center justify-center w-3 h-3 text-[0.55rem] font-semibold text-white bg-red-600 rounded-full">
+              <span className="absolute -top-1 -right-1 inline-flex items-center justify-center w-3 h-3 text-[0.55rem] font-semibold text-white bg-red-600 rounded-full">
                 {unreadReports}
               </span>
             )}
