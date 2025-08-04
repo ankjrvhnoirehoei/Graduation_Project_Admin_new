@@ -1,99 +1,78 @@
-import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { Input } from "../../components/ui/input";
-import { Button } from "../../components/ui/button";
-import { Label } from "../../components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardFooter,
-} from "../../components/ui/card";
+import { useNavigate } from "react-router-dom";
+import { Form, Input, Button, Card, Typography, message } from "antd";
+import api from "../../lib/axios";
+
+const { Title } = Typography;
 
 export function LoginForm() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-
+  const handleLogin = async (values: { email: string; password: string }) => {
+    setLoading(true);
     try {
-      // 1. Đăng nhập
-      const res = await fetch("http://[::1]:4001/users/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
+      // 1. Gửi request đăng nhập
+      const res = await api.post("/users/login", values);
+      const { accessToken, refreshToken } = res.data;
 
-      if (!res.ok) throw new Error("Sai tài khoản hoặc mật khẩu");
-
-      const { accessToken, refreshToken } = await res.json();
-
-      // 2. Lưu token tạm thời vào sessionStorage
       sessionStorage.setItem("accessToken", accessToken);
       sessionStorage.setItem("refreshToken", refreshToken);
 
-      // 3. Kiểm tra role user
-      const userRes = await fetch("http://[::1]:4001/users/me", {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-
-      if (!userRes.ok) throw new Error("Không lấy được thông tin người dùng");
-
-      const user = await userRes.json();
+      // 2. Lấy thông tin user (có interceptor tự đính kèm token)
+      const userRes = await api.get("/users/me");
+      const user = userRes.data;
 
       if (user.role !== "admin") {
         sessionStorage.clear();
         throw new Error("Bạn không có quyền truy cập");
       }
 
-	  sessionStorage.setItem("adminInfo", JSON.stringify(user));
-	  
-      // 4. Thành công → vào trang chủ
+      sessionStorage.setItem("adminInfo", JSON.stringify(user));
+
+      // 3. Thành công
+      message.success("Đăng nhập thành công");
       navigate("/");
     } catch (err: any) {
-      setError(err.message || "Đăng nhập thất bại");
+      const errorMessage =
+        err.response?.data?.message || err.message || "Đăng nhập thất bại";
+      message.error(errorMessage);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Đăng nhập</CardTitle>
-      </CardHeader>
-      <form onSubmit={handleLogin}>
-        <CardContent className="space-y-4">
-          <div>
-            <Label>Email</Label>
-            <Input
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
-          <div>
-            <Label>Mật khẩu</Label>
-            <Input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
-          {error && <p className="text-red-500 text-sm">{error}</p>}
-        </CardContent>
-        <CardFooter>
-          <Button type="submit" className="w-full">
+    <Card
+      title={<Title level={3} style={{ textAlign: "center", marginBottom: 0 }}>Đăng nhập</Title>}
+      style={{ maxWidth: 400, margin: "auto", marginTop: 100 }}
+    >
+      <Form layout="vertical" onFinish={handleLogin}>
+        <Form.Item
+          label="Email"
+          name="email"
+          rules={[
+            { required: true, message: "Vui lòng nhập email" },
+            { type: "email", message: "Email không hợp lệ" },
+          ]}
+        >
+          <Input placeholder="Nhập email" />
+        </Form.Item>
+
+        <Form.Item
+          label="Mật khẩu"
+          name="password"
+          rules={[{ required: true, message: "Vui lòng nhập mật khẩu" }]}
+        >
+          <Input.Password placeholder="Nhập mật khẩu" />
+        </Form.Item>
+
+        <Form.Item>
+          <Button type="primary" htmlType="submit" block loading={loading}>
             Đăng nhập
           </Button>
-        </CardFooter>
-      </form>
+        </Form.Item>
+      </Form>
     </Card>
   );
 }
