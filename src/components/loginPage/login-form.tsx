@@ -19,16 +19,9 @@ export function LoginForm() {
       sessionStorage.setItem("accessToken", accessToken);
       sessionStorage.setItem("refreshToken", refreshToken);
 
-      // 3. Kiểm tra role user
-      const userRes = await fetch("http://[::1]:4001/users/me", {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-
-      if (!userRes.ok) throw new Error("Không lấy được thông tin người dùng");
-
-      const user = await userRes.json();
+      // 2. Lấy thông tin user (có interceptor tự đính kèm token)
+      const userRes = await api.get("/users/me");
+      const user = userRes.data;
 
       if (user.role !== "admin") {
         sessionStorage.clear();
