@@ -29,7 +29,6 @@ export default function StoryRadarChart() {
           // Fallback to mock data if API fails
           const mockData = [
             { category: 'Tương tác', value: 85 },
-            { category: 'Lượt xem', value: 92 },
             { category: 'Chia sẻ', value: 78 },
             { category: 'Bình luận', value: 65 },
             { category: 'Thích', value: 88 },
@@ -41,7 +40,6 @@ export default function StoryRadarChart() {
         // Fallback to mock data on error
         const mockData = [
           { category: 'Tương tác', value: 85 },
-          { category: 'Lượt xem', value: 92 },
           { category: 'Chia sẻ', value: 78 },
           { category: 'Bình luận', value: 65 },
           { category: 'Thích', value: 88 },

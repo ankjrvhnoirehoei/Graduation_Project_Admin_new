@@ -6,6 +6,12 @@ import { Report, Reporter, ContentTarget, UserTarget, ReportsResponse } from '..
 type ReportMode = 'user' | 'content';
 type ViewMode = 'all' | 'unresolved';
 
+// Add interface for target search response
+interface TargetSearchResponse {
+  target: UserTarget | ContentTarget;
+  reports: ReportsResponse;
+}
+
 export default function Issues() {
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(false);
@@ -35,6 +41,9 @@ export default function Issues() {
     }
   };
 
+  // State for storing the target search info
+  const [targetSearchInfo, setTargetSearchInfo] = useState<{target: UserTarget | ContentTarget, mode: ReportMode} | null>(null);
+
   // Fetch reports for a specific target
   const fetchTargetReports = async () => {
     if (!targetId.trim()) return;
@@ -43,10 +52,15 @@ export default function Issues() {
     setError(null);
     try {
       const endpoint = `/admin/reports/${targetMode}/target/${targetId}`;
-      const response = await api.get<ReportsResponse>(endpoint, {
+      const response = await api.get<TargetSearchResponse>(endpoint, {
         headers: { token: true },
       });
-      setTargetReports(response.data.data);
+      // Store both the reports and the target info
+      setTargetReports(response.data.reports.data);
+      setTargetSearchInfo({
+        target: response.data.target,
+        mode: targetMode
+      });
       setShowTargetReports(true);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to fetch target reports');
@@ -69,6 +83,15 @@ export default function Issues() {
           ? { ...report, isDismissed: true, resolved: true }
           : report
       ));
+      
+      // Update target reports if showing
+      if (showTargetReports) {
+        setTargetReports(prev => prev.map(report => 
+          report._id === reportId 
+            ? { ...report, isDismissed: true, resolved: true }
+            : report
+        ));
+      }
       
       if (selectedReport?._id === reportId) {
         setSelectedReport(prev => prev ? { ...prev, isDismissed: true, resolved: true } : null);
@@ -93,6 +116,15 @@ export default function Issues() {
           : report
       ));
       
+      // Update target reports if showing
+      if (showTargetReports) {
+        setTargetReports(prev => prev.map(report => 
+          report._id === reportId 
+            ? { ...report, resolved: true, isDismissed: false }
+            : report
+        ));
+      }
+      
       if (selectedReport?._id === reportId) {
         setSelectedReport(prev => prev ? { ...prev, resolved: true, isDismissed: false } : null);
       }
@@ -116,6 +148,55 @@ export default function Issues() {
   // Check if target is content
   const isContentTarget = (target: any): target is ContentTarget => {
     return target && target.type;
+  };
+
+  // Get target display info - handles both regular reports and target search
+  const getTargetDisplayInfo = (report: Report, useSearchTarget = false) => {
+    // For target search results, use the stored target info
+    if (useSearchTarget && targetSearchInfo) {
+      const target = targetSearchInfo.target;
+      if (isUserTarget(target)) {
+        return {
+          name: target.handleName,
+          username: target.username,
+          profilePic: target.profilePic,
+          id: target._id,
+          type: 'user' as const
+        };
+      } else if (isContentTarget(target)) {
+        return {
+          name: target.user.handleName,
+          username: target.user.username,
+          profilePic: target.user.profilePic,
+          id: target._id,
+          type: 'content' as const,
+          contentType: target.type,
+          media: target.media
+        };
+      }
+    }
+    
+    // For regular reports, use the report's target
+    if (isUserTarget(report.target)) {
+      return {
+        name: report.target.handleName,
+        username: report.target.username,
+        profilePic: report.target.profilePic,
+        id: report.target._id,
+        type: 'user' as const
+      };
+    } else if (isContentTarget(report.target)) {
+      return {
+        name: report.target.user.handleName,
+        username: report.target.user.username,
+        profilePic: report.target.user.profilePic,
+        id: report.target._id,
+        type: 'content' as const,
+        contentType: report.target.type,
+        media: report.target.media
+      };
+    }
+    return null;
   };
 
   useEffect(() => {
@@ -213,7 +294,11 @@ export default function Issues() {
           
           {showTargetReports && (
             <button
-              onClick={() => setShowTargetReports(false)}
+              onClick={() => {
+                setShowTargetReports(false);
+                setTargetSearchInfo(null);
+                setSelectedReport(null);
+              }}
               className="mb-4 text-blue-500 hover:text-blue-700"
             >
               ← Quay lại báo cáo chính
@@ -221,57 +306,89 @@ export default function Issues() {
           )}
 
           <div className="space-y-4">
-            {(showTargetReports ? targetReports : reports).map((report) => (
-              <div
-                key={report._id}
-                className={`border rounded-lg p-4 cursor-pointer transition-colors ${
-                  selectedReport?._id === report._id ? 'bg-blue-50 border-blue-300' : 'hover:bg-gray-50'
-                } ${report.resolved ? 'bg-green-50' : ''} ${report.isDismissed ? 'bg-red-50' : ''}`}
-                onClick={() => setSelectedReport(report)}
-              >
-                <div className="flex justify-between items-start mb-2">
-                  <div className="flex items-center gap-3">
-                    <img
-                      src={report.reporter.profilePic}
-                      alt={report.reporter.handleName}
-                      className="w-10 h-10 rounded-full"
-                    />
-                    <div>
-                      <p className="font-semibold">{report.reporter.handleName}</p>
-                      <p className="text-sm text-gray-600">@{report.reporter.username}</p>
+            {(showTargetReports ? targetReports : reports).map((report) => {
+              const targetInfo = getTargetDisplayInfo(report, showTargetReports);
+              return (
+                <div
+                  key={report._id}
+                  className={`border rounded-lg p-4 cursor-pointer transition-colors ${
+                    selectedReport?._id === report._id ? 'bg-blue-50 border-blue-300' : 'hover:bg-gray-50'
+                  } ${report.resolved ? 'bg-green-50' : ''} ${report.isDismissed ? 'bg-red-50' : ''}`}
+                  onClick={() => setSelectedReport(report)}
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="flex items-center gap-3">
+                      {targetInfo && (
+                        <>
+                          {/* Show thumbnail */}
+                          {showTargetReports && targetInfo.type === 'content' && targetInfo.media && targetInfo.media.length > 0 ? (
+                            <div className="w-10 h-10 rounded overflow-hidden bg-gray-200 flex items-center justify-center">
+                              {targetInfo.media[0].videoUrl ? (
+                                <video
+                                  src={targetInfo.media[0].videoUrl}
+                                  className="w-full h-full object-cover"
+                                  muted
+                                />
+                              ) : targetInfo.media[0].imageUrl ? (
+                                <img
+                                  src={targetInfo.media[0].imageUrl}
+                                  alt="Content thumbnail"
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <div className="text-xs text-gray-500">Media</div>
+                              )}
+                            </div>
+                          ) : (
+                            <img
+                              src={targetInfo.profilePic}
+                              alt={targetInfo.name}
+                              className="w-10 h-10 rounded-full"
+                            />
+                          )}
+                          <div>
+                            <p className="font-semibold">{targetInfo.name}</p>
+                            <p className="text-sm text-gray-600">@{targetInfo.username}</p>
+                            <p className="text-xs text-gray-500">
+                              ID: {targetInfo.id}
+                              {targetInfo.type === 'content' && ` (${targetInfo.contentType})`}
+                            </p>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                    <div className="flex gap-2">
+                      {report.resolved && (
+                        <span className={`px-2 py-1 rounded text-xs ${
+                          report.isDismissed ? 'bg-red-200 text-red-800' : 'bg-green-200 text-green-800'
+                        }`}>
+                          {report.isDismissed ? 'Đã bỏ qua' : 'Đã giải quyết'}
+                        </span>
+                      )}
+                      {!report.isRead && (
+                        <span className="px-2 py-1 rounded text-xs bg-blue-200 text-blue-800">
+                          Mới
+                        </span>
+                      )}
                     </div>
                   </div>
-                  <div className="flex gap-2">
-                    {report.resolved && (
-                      <span className={`px-2 py-1 rounded text-xs ${
-                        report.isDismissed ? 'bg-red-200 text-red-800' : 'bg-green-200 text-green-800'
-                      }`}>
-                        {report.isDismissed ? 'Đã bỏ qua' : 'Đã giải quyết'}
-                      </span>
-                    )}
-                    {!report.isRead && (
-                      <span className="px-2 py-1 rounded text-xs bg-blue-200 text-blue-800">
-                        Mới
-                      </span>
-                    )}
+                  
+                  <div className="mb-2">
+                    <span className="inline-block bg-gray-200 text-gray-800 px-2 py-1 rounded text-sm">
+                      {reasonMap[report.reason] || report.reason}
+                    </span>
                   </div>
+                  
+                  {report.description && (
+                    <p className="text-sm text-gray-700 mb-2">{report.description}</p>
+                  )}
+                  
+                  <p className="text-xs text-gray-500">
+                    {new Date(report.createdAt).toLocaleString()}
+                  </p>
                 </div>
-                
-                <div className="mb-2">
-                  <span className="inline-block bg-gray-200 text-gray-800 px-2 py-1 rounded text-sm">
-                    {reasonMap[report.reason] || report.reason}
-                  </span>
-                </div>
-                
-                {report.description && (
-                  <p className="text-sm text-gray-700 mb-2">{report.description}</p>
-                )}
-                
-                <p className="text-xs text-gray-500">
-                  {new Date(report.createdAt).toLocaleString()}
-                </p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
@@ -282,21 +399,6 @@ export default function Issues() {
               <h3 className="text-lg font-semibold mb-4">Chi tiết báo cáo</h3>
               
               <div className="space-y-4">
-                <div>
-                  <h4 className="font-medium">Người báo cáo:</h4>
-                  <div className="flex items-center gap-2 mt-1">
-                    <img
-                      src={selectedReport.reporter.profilePic}
-                      alt={selectedReport.reporter.handleName}
-                      className="w-8 h-8 rounded-full"
-                    />
-                    <div>
-                      <p className="text-sm font-medium">{selectedReport.reporter.handleName}</p>
-                      <p className="text-xs text-gray-600">@{selectedReport.reporter.username}</p>
-                    </div>
-                  </div>
-                </div>
-
                 <div>
                   <h4 className="font-medium">Lý do:</h4>
                   <p className="text-sm">{reasonMap[selectedReport.reason] || selectedReport.reason}</p>
@@ -310,50 +412,103 @@ export default function Issues() {
                 )}
 
                 <div>
-                  <h4 className="font-medium">Đối tượng:</h4>
-                  {isUserTarget(selectedReport.target) ? (
-                    <div className="flex items-center gap-2 mt-1">
-                      <img
-                        src={selectedReport.target.profilePic}
-                        alt={selectedReport.target.handleName}
-                        className="w-8 h-8 rounded-full"
-                      />
-                      <div>
-                        <p className="text-sm font-medium">{selectedReport.target.handleName}</p>
-                        <p className="text-xs text-gray-600">@{selectedReport.target.username}</p>
-                      </div>
-                    </div>
-                  ) : isContentTarget(selectedReport.target) ? (
-                    <div className="mt-1">
-                      <p className="text-sm font-medium">Bài viết của {selectedReport.target.user.handleName}</p>
-                      <p className="text-xs text-gray-600">Loại: {selectedReport.target.type}</p>
-                      {selectedReport.target.caption && (
-                        <p className="text-xs text-gray-600 mt-1">{selectedReport.target.caption}</p>
-                      )}
-                      {selectedReport.target.media && selectedReport.target.media.length > 0 && (
-                        <div className="mt-2">
-                          {selectedReport.target.media.map((media, index) => (
-                            <div key={media._id} className="mb-2">
-                              {media.videoUrl && (
-                                <video
-                                  src={media.videoUrl}
-                                  controls
-                                  className="w-full max-w-xs rounded"
-                                />
-                              )}
-                              {media.imageUrl && (
-                                <img
-                                  src={media.imageUrl}
-                                  alt={`Media ${index + 1}`}
-                                  className="w-full max-w-xs rounded"
-                                />
-                              )}
-                            </div>
-                          ))}
+                  <h4 className="font-medium">Đối tượng bị báo cáo:</h4>
+                  {/* For target search, use the stored target info; for regular reports, use report's target */}
+                  {showTargetReports && targetSearchInfo ? (
+                    // Display target search info
+                    isUserTarget(targetSearchInfo.target) ? (
+                      <div className="flex items-center gap-2 mt-1">
+                        <img
+                          src={targetSearchInfo.target.profilePic}
+                          alt={targetSearchInfo.target.handleName}
+                          className="w-8 h-8 rounded-full"
+                        />
+                        <div>
+                          <p className="text-sm font-medium">{targetSearchInfo.target.handleName}</p>
+                          <p className="text-xs text-gray-600">@{targetSearchInfo.target.username}</p>
+                          <p className="text-xs text-gray-500">ID: {targetSearchInfo.target._id}</p>
                         </div>
-                      )}
-                    </div>
-                  ) : null}
+                      </div>
+                    ) : isContentTarget(targetSearchInfo.target) ? (
+                      <div className="mt-1">
+                        <p className="text-sm font-medium">Bài viết của {targetSearchInfo.target.user.handleName}</p>
+                        <p className="text-xs text-gray-600">Loại: {targetSearchInfo.target.type}</p>
+                        <p className="text-xs text-gray-500">ID: {targetSearchInfo.target._id}</p>
+                        {targetSearchInfo.target.caption && (
+                          <p className="text-xs text-gray-600 mt-1">{targetSearchInfo.target.caption}</p>
+                        )}
+                        {targetSearchInfo.target.media && targetSearchInfo.target.media.length > 0 && (
+                          <div className="mt-2">
+                            {targetSearchInfo.target.media.map((media, index) => (
+                              <div key={media._id} className="mb-2">
+                                {media.videoUrl && (
+                                  <video
+                                    src={media.videoUrl}
+                                    controls
+                                    className="w-full max-w-xs rounded"
+                                  />
+                                )}
+                                {media.imageUrl && (
+                                  <img
+                                    src={media.imageUrl}
+                                    alt={`Media ${index + 1}`}
+                                    className="w-full max-w-xs rounded"
+                                  />
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ) : null
+                  ) : (
+                    // Display regular report target info
+                    isUserTarget(selectedReport.target) ? (
+                      <div className="flex items-center gap-2 mt-1">
+                        <img
+                          src={selectedReport.target.profilePic}
+                          alt={selectedReport.target.handleName}
+                          className="w-8 h-8 rounded-full"
+                        />
+                        <div>
+                          <p className="text-sm font-medium">{selectedReport.target.handleName}</p>
+                          <p className="text-xs text-gray-600">@{selectedReport.target.username}</p>
+                          <p className="text-xs text-gray-500">ID: {selectedReport.target._id}</p>
+                        </div>
+                      </div>
+                    ) : isContentTarget(selectedReport.target) ? (
+                      <div className="mt-1">
+                        <p className="text-sm font-medium">Bài viết của {selectedReport.target.user.handleName}</p>
+                        <p className="text-xs text-gray-600">Loại: {selectedReport.target.type}</p>
+                        <p className="text-xs text-gray-500">ID: {selectedReport.target._id}</p>
+                        {selectedReport.target.caption && (
+                          <p className="text-xs text-gray-600 mt-1">{selectedReport.target.caption}</p>
+                        )}
+                        {selectedReport.target.media && selectedReport.target.media.length > 0 && (
+                          <div className="mt-2">
+                            {selectedReport.target.media.map((media, index) => (
+                              <div key={media._id} className="mb-2">
+                                {media.videoUrl && (
+                                  <video
+                                    src={media.videoUrl}
+                                    controls
+                                    className="w-full max-w-xs rounded"
+                                  />
+                                )}
+                                {media.imageUrl && (
+                                  <img
+                                    src={media.imageUrl}
+                                    alt={`Media ${index + 1}`}
+                                    className="w-full max-w-xs rounded"
+                                  />
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ) : null
+                  )}
                 </div>
 
                 <div>

@@ -144,9 +144,6 @@ export function StoriesReportManagement({ mode = 'all' }: Props) {
                       <p className="text-sm text-gray-600 mt-1">
                         {story.caption || 'Không có caption'}
                       </p>
-                      <p className="text-xs text-gray-500">
-                        {story.viewCount.toLocaleString()} lượt xem • {new Date(story.createdAt).toLocaleString()}
-                      </p>
                     </div>
                     
                     <div className="flex items-center gap-2">

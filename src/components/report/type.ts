@@ -39,6 +39,7 @@ export interface ContentTarget {
     tags: string[];
   }>;
   user: {
+    username: any;
     _id: string;
     handleName: string;
     profilePic: string;

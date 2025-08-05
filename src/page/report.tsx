@@ -73,7 +73,6 @@ export default function Report() {
     ? [
         { icon: Users, label: 'Người dùng mới', value: stats.users.toLocaleString() },
         { icon: Video, label: 'Bài viết mới', value: stats.contents.toLocaleString() },
-        { icon: Eye, label: 'Lượt xem', value: stats.views.toLocaleString() },
         { icon: MessageCircle, label: 'Bình luận', value: stats.comments.toLocaleString() },
         { icon: LineChart, label: 'Tăng trưởng', value: `${stats.fluctuation.percentageChange}%` },
       ]
@@ -93,9 +92,9 @@ export default function Report() {
 
       {/* Summary Section */}
       {error && <p className="text-red-500 text-sm">{error}</p>}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {loading
-          ? Array(5)
+          ? Array(4)
               .fill(null)
               .map((_, idx) => (
                 <Card key={idx}>

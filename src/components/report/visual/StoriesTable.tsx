@@ -136,7 +136,6 @@ export function StoriesTable() {
             <th className="px-4 py-2 text-left text-sm font-medium text-gray-600">Preview</th>
             <th className="px-4 py-2 text-left text-sm font-medium text-gray-600">Người tạo</th>
             <th className="px-4 py-2 text-left text-sm font-medium text-gray-600">Caption</th>
-            <th className="px-4 py-2 text-left text-sm font-medium text-gray-600">Lượt xem</th>
             <th className="px-4 py-2 text-left text-sm font-medium text-gray-600">Trạng thái</th>
             <th className="px-4 py-2 text-left text-sm font-medium text-gray-600">Bị gắn cờ</th>
             <th className="px-4 py-2 text-left text-sm font-medium text-gray-600">Ngày tạo</th>
