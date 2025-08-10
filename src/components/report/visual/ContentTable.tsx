@@ -223,7 +223,6 @@ export function ContentTable() {
                     <td className="px-4 py-3 text-sm text-gray-700">{content.author}</td>
                     <td className="px-4 py-3 text-sm text-gray-700 text-right">{content.likes}</td>
                     <td className="px-4 py-3 text-sm text-gray-700 text-right">{content.comments}</td>
-                    <td className="px-4 py-3 text-sm text-gray-700 text-right">{content.views}</td>
                     <td className="px-4 py-3 text-sm text-gray-700 text-right">{content.shares}</td>
                     <td className="px-4 py-3 text-sm text-gray-600">{content.createdAt}</td>
                   </tr>

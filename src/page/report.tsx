@@ -201,11 +201,10 @@ export default function Report() {
       </div>
 
       {/* Tabs Section */}
-      <Tabs defaultValue="users">
+      {/* <Tabs defaultValue="users">
         <TabsList className="bg-muted p-1 rounded mb-4">
           <TabsTrigger value="users">Người dùng</TabsTrigger>
           <TabsTrigger value="videos">Bài viết</TabsTrigger>
-          {/* <TabsTrigger value="stories">Stories</TabsTrigger> */}
         </TabsList>
 
         <TabsContent value="users">
@@ -229,7 +228,7 @@ export default function Report() {
             </CardContent>
           </Card>
         </TabsContent>
-      </Tabs>
+      </Tabs> */}
     </div>
   );
 }

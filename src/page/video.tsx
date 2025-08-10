@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { FiBarChart2, FiBell } from "react-icons/fi";
 import VideoAreaChart from "../components/videoPage/VideoAreaChart";
 import VideoRadialSummary from "../components/videoPage/VideoRadialSummary";
@@ -6,12 +6,41 @@ import VideoRadarChart from "../components/videoPage/VideoRadarChart";
 import { VideoPostRadialSummary } from "../components/videoPage/VideoPostRadialSummary";
 import ReportNotification from "../components/homePage/ReportNotification";
 import api from "../lib/axios";
+import { useNavigate } from "react-router-dom";
+import {
+  Layout,
+  Space,
+  Typography,
+  Button,
+  Badge,
+  Avatar,
+  Popover,
+  Divider,
+} from "antd";
+import {
+  BarChartOutlined,
+  BellOutlined,
+  TeamOutlined,
+  LockOutlined,
+  FlagOutlined,
+  UserOutlined,
+} from "@ant-design/icons";
+const { Text, Title } = Typography;
 
 export default function Video() {
   const adminInfo = JSON.parse(sessionStorage.getItem("adminInfo") || "{}");
 
   const [unreadReports, setUnreadReports] = useState<number>(0);
   const [showNotif, setShowNotif] = useState<boolean>(false);
+  const navigate = useNavigate();
+
+  const goAllContents = useCallback(() => {
+    navigate("/admin/contents");
+  }, [navigate]);
+
+  const goLockedContents = useCallback(() => {
+    navigate("/admin/contents?status=locked");
+  }, [navigate]);
 
   // initial load of unread counts
   useEffect(() => {
@@ -37,6 +66,12 @@ export default function Video() {
           <FiBarChart2 size={20} />
           <span>Thống kê</span>
         </div>
+
+        <Space style={{ marginLeft: 990 }} size={8} align="center" wrap>
+          <Button icon={<TeamOutlined />} onClick={goAllContents}>
+            Xem bài viết
+          </Button>
+        </Space>
 
         <div className="flex items-center space-x-4">
      
