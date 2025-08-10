@@ -1,89 +1,153 @@
-import { useState, useEffect } from "react";
-import { FiBarChart2, FiBell } from "react-icons/fi";
+import { useState, useEffect, useCallback } from "react";
+import {
+  Layout,
+  Space,
+  Typography,
+  Button,
+  Badge,
+  Avatar,
+  Popover,
+  Divider,
+} from "antd";
+import {
+  BarChartOutlined,
+  BellOutlined,
+  TeamOutlined,
+  LockOutlined,
+  FlagOutlined,
+  UserOutlined,
+} from "@ant-design/icons";
+import { useNavigate } from "react-router-dom";
 import DashboardCharts from "../components/userPage/DashboardCharts";
 import DashboardUserDetail from "../components/userPage/DashboardUserDetail";
 import ReportNotification from "../components/homePage/ReportNotification";
 import api from "../lib/axios";
 
+const { Content } = Layout;
+const { Text, Title } = Typography;
+
 export default function Users() {
   const adminInfo = JSON.parse(sessionStorage.getItem("adminInfo") || "{}");
 
-  const [unreadReports, setUnreadReports] = useState<number>(0);
-  const [showNotif, setShowNotif] = useState<boolean>(false);
+  const [unreadReports, setUnreadReports] = useState(0);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const navigate = useNavigate();
 
-  // initial load of unread counts
+  // Fetch unread report counts (user + content)
   useEffect(() => {
-    const fetchUnread = async () => {
+    let mounted = true;
+    (async () => {
       try {
         const [uRes, cRes] = await Promise.all([
           api.get("/admin/reports/user/unread", { headers: { token: true } }),
-          api.get("/admin/reports/content/unread", { headers: { token: true } }),
+          api.get("/admin/reports/content/unread", {
+            headers: { token: true },
+          }),
         ]);
-        setUnreadReports(uRes.data.totalCount + cRes.data.totalCount);
+        if (!mounted) return;
+        const total =
+          Number(uRes?.data?.totalCount || 0) +
+          Number(cRes?.data?.totalCount || 0);
+        setUnreadReports(total);
       } catch (err) {
-        console.error("Error fetching unread reports:", err);
+        // im lặng cũng được để tránh làm ồn UI; log nếu cần
+        // console.error("Error fetching unread reports:", err);
       }
+    })();
+    return () => {
+      mounted = false;
     };
-    fetchUnread();
   }, []);
 
+  const goAllUsers = useCallback(() => {
+    navigate("/admin/users");
+  }, [navigate]);
+
+  const goLockedUsers = useCallback(() => {
+    navigate("/admin/users?status=locked");
+  }, [navigate]);
+
+  const goUserReportRequests = useCallback(() => {
+    navigate("/admin/reports?type=user");
+  }, [navigate]);
+
   return (
-    <div className="p-4 space-y-4">
-      {/* Header top bar */}
-      <div className="flex justify-between items-center">
-        <div className="flex items-center gap-2 text-xl font-semibold text-gray-800">
-          <FiBarChart2 size={20} />
-          <span>Thống kê</span>
-        </div>
+    <Layout style={{ background: "transparent" }}>
+      <Content style={{ padding: 16 }}>
+        {/* Header */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 12,
+          }}
+        >
+          <Space size={8} align="center">
+            <BarChartOutlined />
+            <Title level={5} style={{ margin: 0 }}>
+              Thống kê
+            </Title>
+          </Space>
 
-        <div className="flex items-center space-x-4">
+          <Space size={8} align="center" wrap>
+            {/* Xem tài khoản */}
+            <Button icon={<TeamOutlined />} onClick={goAllUsers}>
+              Xem tài khoản
+            </Button>
 
+            {/* Tài khoản bị khoá */}
+            <Button icon={<LockOutlined />} danger onClick={goLockedUsers}>
+              Tài khoản bị khoá
+            </Button>
 
-          <div className="relative">
-            <FiBell
-              size={18}
-              className={`
-                transition
-                ${
-                  unreadReports > 0
-                    ? "text-yellow-700 hover:text-yellow-600"
-                    : "text-gray-600 hover:text-black"
-                }
-              `}
-              onClick={() => setShowNotif((v) => !v)}
-              style={{ cursor: "pointer" }}
-            />
-            {unreadReports > 0 && (
-              <span className="absolute -top-1 -right-1 inline-flex items-center justify-center w-3 h-3 text-[0.55rem] font-semibold text-white bg-red-600 rounded-full">
-                {unreadReports}
-              </span>
-            )}
-            {showNotif && (
-              <div className="absolute top-full right-0 mt-2 z-50">
+            {/* Report tài khoản */}
+            <Badge count={unreadReports} size="small">
+              <Button icon={<FlagOutlined />} onClick={goUserReportRequests}>
+                Report tài khoản
+              </Button>
+            </Badge>
+
+            <Divider type="vertical" />
+
+            {/* Chuông + popover thông báo */}
+            <Popover
+              open={notifOpen}
+              onOpenChange={setNotifOpen}
+              trigger="click"
+              placement="bottomRight"
+              overlayStyle={{ width: 360, maxWidth: "90vw" }}
+              content={
                 <ReportNotification
                   onCountsChange={(userCount, contentCount) =>
-                    setUnreadReports(userCount + contentCount)
+                    setUnreadReports((userCount || 0) + (contentCount || 0))
                   }
                 />
-              </div>
-            )}
-          </div>
+              }
+            >
+              <Badge count={unreadReports} size="small">
+                <Button type="text" icon={<BellOutlined />} />
+              </Badge>
+            </Popover>
 
-          <div className="flex items-center space-x-2">
-            <img
-              src={adminInfo.profilePic || "https://via.placeholder.com/32"}
-              alt="admin avatar"
-              className="w-7 h-7 rounded-full object-cover"
-            />
-            <span className="text-sm font-medium text-gray-700">
-              {adminInfo.username || "Admin"}
-            </span>
-          </div>
+            {/* Admin info */}
+            <Space size={8}>
+              <Avatar
+                src={adminInfo?.profilePic}
+                icon={<UserOutlined />}
+                size={28}
+              />
+              <Text strong>{adminInfo?.username || "Admin"}</Text>
+            </Space>
+          </Space>
         </div>
-      </div>
 
-      <DashboardCharts />
-      <DashboardUserDetail />
-    </div>
+        <div style={{ height: 16 }} />
+
+        <DashboardCharts />
+        <div style={{ height: 16 }} />
+        <DashboardUserDetail />
+      </Content>
+    </Layout>
   );
 }
