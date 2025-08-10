@@ -229,17 +229,6 @@ export default function Report() {
             </CardContent>
           </Card>
         </TabsContent>
-
-        {/* <TabsContent value="stories">
-          <Card>
-            <CardHeader>
-              <CardTitle>Danh sách stories mới</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <StoriesTable />
-            </CardContent>
-          </Card>
-        </TabsContent> */}
       </Tabs>
     </div>
   );

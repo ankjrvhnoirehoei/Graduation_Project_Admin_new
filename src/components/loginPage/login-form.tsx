@@ -34,9 +34,16 @@ export function LoginForm() {
       message.success("Đăng nhập thành công");
       navigate("/");
     } catch (err: any) {
-      const errorMessage =
+      console.log(err);
+      const status = err.response?.status;
+      let errorMessage =
         err.response?.data?.message || err.message || "Đăng nhập thất bại";
-      message.error(errorMessage);
+
+      if (status === 401 || status === 400) {
+        errorMessage = "Email hoặc mật khẩu không đúng";
+      }
+
+      window.alert(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -44,7 +51,11 @@ export function LoginForm() {
 
   return (
     <Card
-      title={<Title level={3} style={{ textAlign: "center", marginBottom: 0 }}>Đăng nhập</Title>}
+      title={
+        <Title level={3} style={{ textAlign: "center", marginBottom: 0 }}>
+          Đăng nhập
+        </Title>
+      }
       style={{ maxWidth: 400, margin: "auto", marginTop: 100 }}
     >
       <Form layout="vertical" onFinish={handleLogin}>
