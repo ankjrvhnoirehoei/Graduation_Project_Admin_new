@@ -116,7 +116,6 @@ export default function Users() {
               onOpenChange={setNotifOpen}
               trigger="click"
               placement="bottomRight"
-              overlayStyle={{ width: 360, maxWidth: "90vw" }}
               content={
                 <ReportNotification
                   onCountsChange={(userCount, contentCount) =>
@@ -126,7 +125,7 @@ export default function Users() {
               }
             >
               <Badge count={unreadReports} size="small">
-                <Button type="text" icon={<BellOutlined />} />
+                <BellOutlined />
               </Badge>
             </Popover>
 
