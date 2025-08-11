@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "http://[::1]:4001/",
+  baseURL: "https://cirla.io.vn",
 });
 
 api.interceptors.request.use(

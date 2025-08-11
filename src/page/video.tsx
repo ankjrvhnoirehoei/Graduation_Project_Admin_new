@@ -48,7 +48,9 @@ export default function Video() {
       try {
         const [uRes, cRes] = await Promise.all([
           api.get("/admin/reports/user/unread", { headers: { token: true } }),
-          api.get("/admin/reports/content/unread", { headers: { token: true } }),
+          api.get("/admin/reports/content/unread", {
+            headers: { token: true },
+          }),
         ]);
         setUnreadReports(uRes.data.totalCount + cRes.data.totalCount);
       } catch (err) {
@@ -74,18 +76,11 @@ export default function Video() {
         </Space>
 
         <div className="flex items-center space-x-4">
-     
-
           <div className="relative">
             <FiBell
               size={18}
               className={`
-                transition
-                ${
-                  unreadReports > 0
-                    ? "text-yellow-700 hover:text-yellow-600"
-                    : "text-gray-600 hover:text-black"
-                }
+                transition "text-gray-600 hover:text-black"
               `}
               onClick={() => setShowNotif((v) => !v)}
               style={{ cursor: "pointer" }}
