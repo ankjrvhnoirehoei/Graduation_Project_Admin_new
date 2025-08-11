@@ -101,6 +101,13 @@ export default function Users() {
               Tài khoản bị khoá
             </Button>
 
+            <Badge count={unreadReports} size="small">
+              <Button icon={<FlagOutlined />} onClick={goUserReportRequests}>
+                Report tài khoản
+              </Button>
+            </Badge>
+
+            <Divider type="vertical" />
 
             {/* Chuông + popover thông báo */}
             <Popover

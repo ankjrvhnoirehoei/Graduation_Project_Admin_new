@@ -100,12 +100,7 @@ export default function Home() {
             <FiBell
               size={18}
               className={`
-                transition 
-                ${
-                  unreadReports > 0
-                    ? "text-yellow-700 hover:text-yellow-600 bg"
-                    : "text-gray-600 hover:text-black"
-                }
+                transition text-gray-600 hover:text-black
               `}
               onClick={() => setShowNotif((v) => !v)}
               style={{ cursor: "pointer" }}
