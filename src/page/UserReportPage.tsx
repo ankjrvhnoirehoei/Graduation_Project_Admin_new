@@ -17,6 +17,7 @@ import {
   Flex,
   Avatar,
   Divider,
+  message,
 } from "antd";
 import {
   FlagOutlined,
@@ -87,7 +88,7 @@ const REASON_LABEL: Record<ReportReason, string> = {
   [ReportReason.OTHER]: "Khác",
 };
 
-const REPORT_MODE = "users";
+const REPORT_MODE = "user";
 
 const reasonOptions = Object.entries(REASON_LABEL).map(([value, label]) => ({
   value,
@@ -197,9 +198,9 @@ export default function UserReportsPage() {
       setTotal(total);
     } catch (err: any) {
       console.error(err);
-      message.error(
-        err?.response?.data?.message || "Không thể tải danh sách báo cáo"
-      );
+      // message.error(
+      //   err?.response?.data?.message || "Không thể tải danh sách báo cáo"
+      // );
     } finally {
       setLoading(false);
     }
@@ -220,11 +221,51 @@ export default function UserReportsPage() {
 
   // Actions
   const markResolved = async (record: ReportUserRow) => {
-    
+    try {
+      await api.patch(
+        `/admin/reports/${REPORT_MODE}/resolve/${record._id}`,
+        {},
+        { headers: { token: true } }
+      );
+      
+      // Update the report in the current list
+      setRows(prev => prev.map(report => 
+        report._id === record._id 
+          ? { ...report, resolved: true, isDismissed: false }
+          : report
+      ));
+      
+      message.success("Báo cáo đã được đánh dấu là đã xử lý");
+    } catch (err: any) {
+      console.error(err);
+      // message.error(
+      //   err?.response?.data?.message || "Không thể đánh dấu báo cáo đã xử lý"
+      // );
+    }
   };
 
   const dismissReport = async (record: ReportUserRow) => {
-    
+    try {
+      await api.patch(
+        `/admin/reports/${REPORT_MODE}/dismiss/${record._id}`,
+        {},
+        { headers: { token: true } }
+      );
+      
+      // Update the report in the current list
+      setRows(prev => prev.map(report => 
+        report._id === record._id 
+          ? { ...report, isDismissed: true, resolved: true }
+          : report
+      ));
+      
+      message.success("Báo cáo đã được bỏ qua");
+    } catch (err: any) {
+      console.error(err);
+      // message.error(
+      //   err?.response?.data?.message || "Không thể bỏ qua báo cáo"
+      // );
+    }
   };
 
   const setRead = async (reportId: string, next: boolean) => {
@@ -238,7 +279,7 @@ export default function UserReportsPage() {
         prev.map((r) => (r._id === reportId ? { ...r, isRead: next } : r))
       );
     } catch (e: any) {
-      message.error(e?.response?.data?.message || "Không thể cập nhật đã đọc");
+      // message.error(e?.response?.data?.message || "Không thể cập nhật đã đọc");
     }
   };
 
@@ -270,10 +311,10 @@ export default function UserReportsPage() {
       );
       return locked;
     } catch (e: any) {
-      message.error(
-        e?.response?.data?.message ||
-          `Không thể thay đổi trạng thái khoá/mở cho ${whoLabel}`
-      );
+      // message.error(
+      //   e?.response?.data?.message ||
+      //     `Không thể thay đổi trạng thái khoá/mở cho ${whoLabel}`
+      // );
       throw e;
     } finally {
       setLockLoading((m) => ({ ...m, [userId]: false }));
