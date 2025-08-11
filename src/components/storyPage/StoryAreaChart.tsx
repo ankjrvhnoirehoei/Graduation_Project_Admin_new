@@ -65,14 +65,6 @@ export default function StoryAreaChart() {
             fill="#8884d8" 
             name="Stories"
           />
-          <Area 
-            type="monotone" 
-            dataKey="views" 
-            stackId="2" 
-            stroke="#82ca9d" 
-            fill="#82ca9d" 
-            name="Lượt xem"
-          />
         </AreaChart>
       </ResponsiveContainer>
     </div>

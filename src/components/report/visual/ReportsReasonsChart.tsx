@@ -243,6 +243,14 @@ export function ReportsReasonsChart({ rangeType = 'year' }: Props) {
     return Array.from(combinedMap.values()).sort(sortPeriods);
   };
 
+  if (loading) {
+    return <div className="flex h-full items-center justify-center">Đang tải...</div>;
+  }
+
+  if (error) {
+    return <div className="text-red-500 text-sm">{error}</div>;
+  }
+
   return (
     <div className="w-full h-full">
       <ResponsiveContainer width="100%" height="90%">

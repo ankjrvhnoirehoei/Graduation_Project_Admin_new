@@ -86,7 +86,6 @@ export function UsersTable() {
             <th className="px-4 py-2 text-left text-sm font-medium text-gray-600">Ảnh đại diện</th>
             <th className="px-4 py-2 text-left text-sm font-medium text-gray-600">Username</th>
             <th className="px-4 py-2 text-left text-sm font-medium text-gray-600">Handle</th>
-            {/* <th className="px-4 py-2 text-left text-sm font-medium text-gray-600">VIP</th> */}
             <th className="px-4 py-2 text-left text-sm font-medium text-gray-600">Bị xóa</th>
             <th className="px-4 py-2 text-left text-sm font-medium text-gray-600">Ngày tạo account</th>
             <th className="px-4 py-2 text-left text-sm font-medium text-gray-600">Ngày sinh</th>

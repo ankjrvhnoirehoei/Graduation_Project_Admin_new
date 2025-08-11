@@ -44,7 +44,7 @@ export default function NewUsersToday() {
       try {
         const res = await api.get("/admin/users/new", {
           headers: { token: true },
-          params: { range: "7days", page, limit },
+          params: { range: "default", page, limit },
         });
         if (res.data.success) {
           setUsers(res.data.data.items);

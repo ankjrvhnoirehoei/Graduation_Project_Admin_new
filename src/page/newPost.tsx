@@ -91,7 +91,7 @@ export default function NewPostsToday() {
     try {
       const res = await api.get("/admin/posts/new", {
         headers: { token: true },
-        params: { range: "7days", sortBy, sortOrder, page, limit: pageSize },
+        params: { range: "default", sortBy, sortOrder, page, limit: pageSize },
       });
       if (res.data.success) {
         setData(res.data.data);

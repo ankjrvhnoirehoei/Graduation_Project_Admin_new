@@ -21,6 +21,7 @@ import NewReportToday from "./page/newReport";
 import Issues from "./page/issues";
 import api from "./lib/axios";
 import AdminUsersPage from "./page/AdminUsers";
+import AdminContentsPage from "./page/AdminContents";
 
 function ProtectedLayout() {
   const location = useLocation();
@@ -67,6 +68,7 @@ function ProtectedLayout() {
           <Route path="/issues" element={<Issues />} />
           <Route path="/documents" element={<Document />} />
           <Route path="/admin/users" element={<AdminUsersPage />} />
+          <Route path="/admin/contents" element={<AdminContentsPage />} />
         </Routes>
       </main>
     </div>

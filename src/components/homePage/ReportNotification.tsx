@@ -95,8 +95,7 @@ export default function ReportNotification({ onCountsChange }: Props) {
     avatar: <Avatar src={item.reporter.profilePic} />,
     description: (
       <>
-        Người dùng <b>{item.reporter.handleName}</b> đã báo cáo người dùng{" "}
-        <b>{item.target.handleName}</b> vì <b>{reasonMap[item.reason]}</b>
+        Người dùng <b>{item.target.handleName}</b> đã bị báo cáo vì <b>{reasonMap[item.reason]}</b>
         {item.description && <> với nội dung: “{item.description}”.</>}
       </>
     ),
@@ -122,8 +121,7 @@ export default function ReportNotification({ onCountsChange }: Props) {
       avatar,
       description: (
         <>
-          Người dùng <b>{item.reporter.handleName}</b> đã báo cáo bài viết
-          {item.target.caption && <> “{item.target.caption}”</>} vì{" "}
+          Bài viết {item.target.caption && <> “{item.target.caption}”</>} đã bị báo cáo vì{" "}
           <b>{reasonMap[item.reason]}</b>
           {item.description && <> với nội dung: “{item.description}”.</>}
         </>
@@ -180,7 +178,6 @@ export default function ReportNotification({ onCountsChange }: Props) {
           tab={`Bài viết (${contentReports.length})`}
           key="content"
         />
-        <Tabs.TabPane tab={`Story (${storyReports.length})`} key="story" />
       </Tabs>
 
       <div style={{ maxHeight: 400, overflowY: "auto", marginTop: 10 }}>

@@ -183,7 +183,6 @@ export function ContentTable() {
               <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700 tracking-wide">Người đăng</th>
               <th className="px-4 py-2 text-right text-sm font-semibold text-gray-700 tracking-wide">Lượt thích</th>
               <th className="px-4 py-2 text-right text-sm font-semibold text-gray-700 tracking-wide">Bình luận</th>
-              <th className="px-4 py-2 text-right text-sm font-semibold text-gray-700 tracking-wide">Lượt xem</th>
               <th className="px-4 py-2 text-right text-sm font-semibold text-gray-700 tracking-wide">Chia sẻ</th>
               <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700 tracking-wide">Ngày tạo</th>
             </tr>
@@ -224,7 +223,6 @@ export function ContentTable() {
                     <td className="px-4 py-3 text-sm text-gray-700">{content.author}</td>
                     <td className="px-4 py-3 text-sm text-gray-700 text-right">{content.likes}</td>
                     <td className="px-4 py-3 text-sm text-gray-700 text-right">{content.comments}</td>
-                    <td className="px-4 py-3 text-sm text-gray-700 text-right">{content.views}</td>
                     <td className="px-4 py-3 text-sm text-gray-700 text-right">{content.shares}</td>
                     <td className="px-4 py-3 text-sm text-gray-600">{content.createdAt}</td>
                   </tr>
@@ -280,10 +278,6 @@ export function ContentTable() {
                   <h3 className="font-semibold mb-3 text-gray-700">Thống kê & Trạng thái</h3>
                   <div className="space-y-2">
                     <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-xs text-gray-500 mb-1">Lượt xem</p>
-                        <p className="text-sm font-medium">{selectedPost.viewCount}</p>
-                      </div>
                       <div>
                         <p className="text-xs text-gray-500 mb-1">Lượt thích</p>
                         <p className="text-sm font-medium">{selectedPost.likeCount}</p>

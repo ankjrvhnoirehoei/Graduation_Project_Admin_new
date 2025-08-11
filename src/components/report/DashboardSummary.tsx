@@ -60,12 +60,11 @@ export default function DashboardSummary({ rangeType }: Props) {
   const cards = [
     { label: 'Người dùng mới', value: metrics.users,    change: `${metrics.fluctuation.percentageChange}%` },
     { label: 'Bài viết mới',      value: metrics.contents, change: `${metrics.fluctuation.percentageChange}%` },
-    { label: 'Lượt xem',       value: metrics.views,    change: `${metrics.fluctuation.percentageChange}%` },
     { label: 'Bình luận',      value: metrics.comments, change: `${metrics.fluctuation.percentageChange}%` },
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       {cards.map((c,i) => (
         <div key={i} className="bg-white shadow rounded-lg p-4">
           <p className="text-sm text-gray-500">{c.label}</p>
