@@ -45,7 +45,7 @@ export default function StoryAreaChart() {
 
   return (
     <div className="bg-white p-4 rounded-lg shadow">
-      <style jsx>{`
+      <style>{`
         :global(.recharts-surface) {
           background-color: #ffc0cb !important;
         }

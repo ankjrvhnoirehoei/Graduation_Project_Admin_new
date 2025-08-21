@@ -68,7 +68,7 @@ export default function Story() {
 
       <div className="flex flex-col md:flex-row gap-4">
         <div className="w-full md:w-[70%] flex flex-col gap-4">
-          {/* <StoryAreaChart /> */}
+          <StoryAreaChart />
           <StoryPostRadialSummary />
         </div>
 
